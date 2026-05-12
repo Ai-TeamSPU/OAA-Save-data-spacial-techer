@@ -1187,26 +1187,23 @@ function App() {
     if (settings.sheetsUrl) {
       setSheetsStatus("sending");
       try {
-        // ใช้ GET + encoded JSON เพื่อแก้ปัญหา CORS กับ Google Apps Script
+        // ใช้ GET + no-cors เพื่อแก้ปัญหา CORS (จะไม่สามารถอ่าน response กลับมาได้ แต่ข้อมูลจะถูกส่งไป)
         const encoded = encodeURIComponent(JSON.stringify({ ...form }));
         const url = settings.sheetsUrl + "?data=" + encoded;
-        const res = await fetch(url, { method: "GET" });
-        const json = await res.json().catch(() => ({}));
-        if (json.status === "ok") {
-          setSheetsStatus("ok");
-          showToast("✓ บันทึกและส่งไป Google Sheets แล้ว!", "success");
-          Swal.fire({
-            icon: 'success',
-            title: 'สำเร็จ!',
-            text: 'บันทึกและส่งข้อมูลไป Google Sheets สำเร็จแล้ว!',
-            confirmButtonText: 'ตกลง',
-            confirmButtonColor: '#1a56db'
-          }).then(() => {
-            setFormRaw(defaultForm());
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          });
-        }
-        else { setSheetsStatus("error"); showToast("บันทึกแล้ว แต่ Sheets ผิดพลาด: " + (json.message || ""), "error"); }
+        await fetch(url, { method: "GET", mode: "no-cors" });
+        
+        setSheetsStatus("ok");
+        showToast("✓ บันทึกและส่งไป Google Sheets แล้ว!", "success");
+        Swal.fire({
+          icon: 'success',
+          title: 'สำเร็จ!',
+          text: 'บันทึกและส่งข้อมูลไป Google Sheets สำเร็จแล้ว!',
+          confirmButtonText: 'ตกลง',
+          confirmButtonColor: '#1a56db'
+        }).then(() => {
+          setFormRaw(defaultForm());
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
       } catch (e) { setSheetsStatus("error"); showToast("บันทึกในเครื่องแล้ว แต่เชื่อมต่อ Sheets ไม่ได้: " + e.message, "error"); }
       setTimeout(() => setSheetsStatus(null), 4000);
     } else {

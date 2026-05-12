@@ -59,7 +59,7 @@ function saveData(data) {
       "รายวิชา 1 (รหัส)", "รายวิชา 1 (ชื่อ)", "รายวิชา 1 (หน่วยกิต)",
       "รายวิชา 2 (รหัส)", "รายวิชา 2 (ชื่อ)", "รายวิชา 2 (หน่วยกิต)",
       "สัดส่วนการสอน", "ชั่วโมง/สัปดาห์",
-      "คุณสมบัติ (กลุ่ม)", "ประเภทอาจารย์พิเศษ",
+      "กลุ่ม", "รายละเอียด",
       "ความเชี่ยวชาญ", "หมายเหตุ",
     ];
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
@@ -72,11 +72,28 @@ function saveData(data) {
   var courses = data.courses || [];
   var subs = data.qualSubs || {};
 
-  var qualType = "";
   var qualGroup = "";
-  if (subs.qual1_a || subs.qual1_b) { qualType = "อาจารย์พิเศษ"; qualGroup = "กลุ่ม 1"; }
-  else if (subs.qual2_a || subs.qual2_c) { qualType = "อาจารย์พิเศษร่วมสอน"; qualGroup = "กลุ่ม 2"; }
-  else if (subs.qual3_a) { qualType = "อาจารย์พิเศษช่วยสอน"; qualGroup = "กลุ่ม 3"; }
+  var qualDetailsArr = [];
+
+  if (subs.qual1_a || subs.qual1_b) { 
+    qualGroup = "กลุ่มที่ 1"; 
+    if (subs.qual1_a) qualDetailsArr.push("คุณวุฒิปริญญาโท สอดคล้องตามเกณฑ์มาตรฐานหลักสูตร พ.ศ. 2565");
+    if (subs.qual1_b) {
+      var branchStr = data.qualFields && data.qualFields.qual1_branch ? " (" + data.qualFields.qual1_branch + ")" : "";
+      qualDetailsArr.push("มีตำแหน่ง ศาสตราจารย์ รองศาสตราจารย์ หรือ ผู้ช่วยศาสตราจารย์ ในสาขาวิชา" + branchStr);
+    }
+  }
+  else if (subs.qual2_a || subs.qual2_c) { 
+    qualGroup = "กลุ่มที่ 2"; 
+    if (subs.qual2_a) qualDetailsArr.push("คุณวุฒิปริญญาตรี และมีประสบการณ์ทำงานภาคอุตสาหกรรม อย่างต่อเนื่องมาแล้ว 5 ปีขึ้นไป");
+    if (subs.qual2_c) qualDetailsArr.push("มีความรู้และประสบการณ์เป็นที่ยอมรับซึ่งตรงหรือสัมพันธ์กับรายวิชาที่สอน หรือผลงานเป็นที่ประจักษ์ในวิชาชีพ");
+  }
+  else if (subs.qual3_a) { 
+    qualGroup = "กลุ่มที่ 3"; 
+    if (subs.qual3_a) qualDetailsArr.push("คุณวุฒิปริญญาตรี และมีประสบการณ์ทำงานภาคอุตสาหกรรม น้อยกว่า 5 ปี");
+  }
+
+  var qualDetails = qualDetailsArr.join(", ");
 
   var titlePrefix = data.titlePrefix === "อื่นๆ / Other" ? (data.titleCustom || "") : (data.titlePrefix || "");
 
@@ -171,8 +188,8 @@ function saveData(data) {
     "วุฒิ 2 (สถาบัน)": edu[1] ? edu[1].institution : "",
     "สัดส่วนการสอน": courses.map(c => c.proportion || "ไม่ระบุ").join(", "),
     "ชั่วโมง/สัปดาห์": data.teachingHours || "",
-    "คุณสมบัติ (กลุ่ม)": qualGroup,
-    "ประเภทอาจารย์พิเศษ": qualType,
+    "กลุ่ม": qualGroup,
+    "รายละเอียด": qualDetails,
     "ความเชี่ยวชาญ": data.expertise || "",
     "หมายเหตุ": data.note || ""
   };
