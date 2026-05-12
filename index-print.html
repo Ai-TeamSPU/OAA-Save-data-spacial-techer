@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>แบบฟอร์มอาจารย์พิเศษ (พิมพ์) · มหาวิทยาลัยศรีปทุม</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Sarabun', sans-serif; background: #fff; font-size: 12pt; color: #000; }
+
+    /* Hide interactive/loading elements */
+    #loading-screen { display: none !important; }
+    #root { display: block !important; }
+
+    /* Override app background */
+    #root > div { background: #fff !important; min-height: auto !important; }
+
+    /* Header print style */
+    .print-header { 
+      background: #1e3a8a !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* Hide action buttons, records list, toast */
+    .no-print { display: none !important; }
+
+    /* Card styles for print */
+    @media print {
+      @page { size: A4 portrait; margin: 1.2cm 1.5cm; }
+
+      body { font-size: 10pt; }
+
+      /* Force colors */
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+      /* Page breaks between sections */
+      .print-section { break-inside: avoid; margin-bottom: 12pt; }
+      .print-page-break { break-before: page; }
+
+      /* Hide non-essential UI */
+      button, .no-print, [style*="position: fixed"] { display: none !important; }
+
+      /* Compact layout */
+      input, select, textarea {
+        border: 1px solid #999 !important;
+        background: #fff !important;
+        -webkit-appearance: none;
+      }
+    }
+
+    /* Screen print preview styles */
+    .print-wrapper {
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 10mm;
+      background: #fff;
+    }
+
+    .print-doc-header {
+      text-align: center;
+      border-bottom: 2px solid #1e3a8a;
+      padding-bottom: 10px;
+      margin-bottom: 18px;
+    }
+    .print-doc-header h1 { font-size: 16pt; font-weight: 800; color: #1e3a8a; }
+    .print-doc-header p { font-size: 10pt; color: #555; margin-top: 3px; }
+
+    .print-section {
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      break-inside: avoid;
+    }
+    .section-title {
+      background: #eff6ff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      padding: 6px 12px;
+      font-size: 10pt;
+      font-weight: 700;
+      color: #1e3a8a;
+      border-bottom: 1px solid #d1d5db;
+      border-radius: 6px 6px 0 0;
+    }
+    .section-body { padding: 10px 12px; }
+
+    .field-grid { display: grid; gap: 8px 12px; }
+    .field-grid-2 { grid-template-columns: 1fr 1fr; }
+    .field-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .field-grid-1 { grid-template-columns: 1fr; }
+
+    .field-item { display: flex; flex-direction: column; gap: 3px; }
+    .field-label { font-size: 8.5pt; font-weight: 600; color: #555; }
+    .field-value {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 4px 7px;
+      font-size: 10pt;
+      min-height: 24px;
+      background: #fff;
+    }
+    .field-value.empty { color: #bbb; font-style: italic; }
+    .field-value-multiline { min-height: 44px; line-height: 1.5; }
+
+    .edu-item, .work-item, .course-item {
+      border: 1px solid #e5e7eb;
+      border-radius: 5px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      break-inside: avoid;
+    }
+    .item-label { font-size: 8pt; font-weight: 700; color: #7c3aed; margin-bottom: 6px; }
+
+    .qual-item {
+      border: 1px solid #e5e7eb;
+      border-radius: 5px;
+      margin-bottom: 6px;
+      overflow: hidden;
+      break-inside: avoid;
+    }
+    .qual-group-header {
+      background: #f8fafc;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      padding: 5px 10px;
+      font-size: 9pt; font-weight: 600;
+    }
+    .qual-group-body { padding: 6px 10px; }
+    .qual-checkbox-row { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 4px; }
+    .checkbox-box {
+      width: 12px; height: 12px; border: 1.5px solid #666;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px; font-size: 10pt;
+    }
+    .result-badge {
+      display: inline-block;
+      border-radius: 4px; padding: 1px 7px;
+      font-size: 8pt; font-weight: 700; color: #fff;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      margin-left: 8px;
+    }
+
+    .page-break { break-before: page; }
+
+    @media screen {
+      body { background: #e5e7eb; }
+      .print-wrapper { box-shadow: 0 0 30px rgba(0,0,0,0.15); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="print-wrapper" id="print-content">
+  <!-- Will be populated by JS from localStorage -->
+  <div class="print-doc-header">
+    <h1>🎓 แบบฟอร์มข้อมูลอาจารย์พิเศษ</h1>
+    <p>Adjunct Instructor Information Form · มหาวิทยาลัยศรีปทุม (Sripatum University)</p>
+  </div>
+  <div id="form-data-container">
+    <p style="text-align:center; color:#999; padding: 40px;">กำลังโหลดข้อมูล...</p>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = "oaa_form_data_v1";
+
+function val(v, fallback) {
+  return (v && String(v).trim()) ? String(v).trim() : (fallback || "");
+}
+
+function fieldHtml(label, value, opts) {
+  const v = val(value);
+  const cls = v ? "" : " empty";
+  const multiline = opts && opts.multiline;
+  return `<div class="field-item">
+    <div class="field-label">${label}</div>
+    <div class="field-value${cls}${multiline ? ' field-value-multiline' : ''}">${v || '—'}</div>
+  </div>`;
+}
+
+function gridHtml(cols, ...fields) {
+  const valid = fields.filter(Boolean);
+  return `<div class="field-grid field-grid-${cols}">${valid.join('')}</div>`;
+}
+
+function renderRecord(data) {
+  const title = val(data.titlePrefix) === "อื่นๆ / Other" ? val(data.titleCustom) : val(data.titlePrefix);
+  const fullNameTH = `${title} ${val(data.firstNameTH)} ${val(data.lastNameTH)}`.trim();
+  const fullNameEN = `${val(data.firstNameEN)} ${val(data.lastNameEN)}`.trim();
+
+  // === Educations ===
+  const eduItems = (data.educations || []).map((edu, i) => `
+    <div class="edu-item">
+      <div class="item-label">วุฒิการศึกษาที่ ${i+1}</div>
+      ${gridHtml(2,
+        fieldHtml("ระดับ", edu.level),
+        fieldHtml("ปีที่สำเร็จ (พ.ศ.)", edu.year)
+      )}
+      ${gridHtml(1, fieldHtml("หลักสูตร", edu.curriculum))}
+      ${gridHtml(2,
+        fieldHtml("สาขาวิชา", edu.major),
+        fieldHtml("สถาบัน", edu.institution)
+      )}
+    </div>`).join('');
+
+  // === Experiences ===
+  const workItems = (data.experiences || []).map((w, i) => `
+    <div class="work-item">
+      <div class="item-label" style="color:#059669">ประสบการณ์ที่ ${i+1}</div>
+      ${gridHtml(2,
+        fieldHtml("ตำแหน่ง", w.position),
+        fieldHtml("สถานประกอบการ", w.company)
+      )}
+      ${gridHtml(3,
+        fieldHtml("วันเริ่ม", w.startDate),
+        fieldHtml("วันสิ้นสุด", w.isCurrent ? "ปัจจุบัน" : w.endDate),
+        fieldHtml("สถานะ", w.isCurrent ? "ทำงานอยู่ปัจจุบัน" : "สิ้นสุดแล้ว")
+      )}
+    </div>`).join('');
+
+  // === Courses ===
+  const courseItems = (data.courses || []).map((c, i) => {
+    const code = [c.code1, c.code2, c.code3].filter(Boolean).join('-') || '—';
+    return `<div class="course-item">
+      <div class="item-label" style="color:#dc6b19">รายวิชาที่ ${i+1}</div>
+      ${gridHtml(3,
+        fieldHtml("รหัสวิชา", code),
+        fieldHtml("ชื่อวิชา", c.name),
+        fieldHtml("หน่วยกิต", c.credits)
+      )}
+    </div>`;
+  }).join('');
+
+  // === Qualifications ===
+  const subs = data.qualSubs || {};
+  const fields = data.qualFields || {};
+
+  const qualGroups = [
+    {
+      label: "กลุ่มที่ 1: คุณวุฒิปริญญาโท สอดคล้องตามเกณฑ์มาตรฐานหลักสูตร พ.ศ. 2565",
+      result: "อาจารย์พิเศษ", color: "#1a56db",
+      subs: [
+        { key: "qual1_a", label: "คุณวุฒิปริญญาโท สอดคล้องตามเกณฑ์มาตรฐานหลักสูตร พ.ศ. 2565 หรือ" },
+        { key: "qual1_b", label: "มีตำแหน่งผู้ช่วยศาสตราจารย์ หรือรองศาสตราจารย์ ในสาขาวิชา: " + val(fields["qual1_branch"]) },
+      ]
+    },
+    {
+      label: "กลุ่มที่ 2: คุณวุฒิปริญญาตรี + ประสบการณ์ 5 ปีขึ้นไป",
+      result: "อาจารย์พิเศษร่วมสอน", color: "#059669",
+      subs: [
+        { key: "qual2_a", label: "ประสบการณ์ 5 ปีขึ้นไป" + (fields["qual2_exp_years"] ? ` (รวม ${fields["qual2_exp_years"]} ปี)` : "") },
+        { key: "qual2_b", label: "มีตำแหน่งผู้ช่วยศาสตราจารย์/รองศาสตราจารย์ ในสาขาวิชา: " + val(fields["qual2_branch"]) },
+        { key: "qual2_c", label: "มีความรู้/ประสบการณ์เป็นที่ยอมรับ สัมพันธ์กับรายวิชาที่สอน" },
+      ]
+    },
+    {
+      label: "กลุ่มที่ 3: คุณวุฒิปริญญาตรี + ประสบการณ์น้อยกว่า 5 ปี",
+      result: "อาจารย์พิเศษช่วยสอน", color: "#dc6b19",
+      subs: [
+        { key: "qual3_a", label: "ประสบการณ์น้อยกว่า 5 ปี" + (fields["qual3_exp_years"] ? ` (รวม ${fields["qual3_exp_years"]} ปี)` : "") },
+      ]
+    }
+  ];
+
+  const anySelected = g => g.subs.some(s => subs[s.key]);
+
+  const qualHtml = qualGroups.map(g => {
+    const selected = anySelected(g);
+    return `<div class="qual-item">
+      <div class="qual-group-header">
+        ${g.label}
+        ${selected ? `<span class="result-badge" style="background:${g.color}">${g.result}</span>` : ''}
+      </div>
+      <div class="qual-group-body">
+        ${g.subs.map(s => `
+          <div class="qual-checkbox-row">
+            <div class="checkbox-box">${subs[s.key] ? '✓' : ''}</div>
+            <span style="font-size:9pt">${s.label}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+    <!-- Section 1 -->
+    <div class="print-section">
+      <div class="section-title">1. ข้อมูลภาคการศึกษาและคณะ/สาขาวิชา</div>
+      <div class="section-body">
+        ${gridHtml(1, fieldHtml("ประจำภาคการศึกษา", data.semester))}
+        ${gridHtml(2, fieldHtml("คณะ / School", data.faculty), fieldHtml("สาขาวิชา / Program", data.branch))}
+      </div>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="print-section">
+      <div class="section-title">2. ข้อมูลส่วนตัว</div>
+      <div class="section-body">
+        ${gridHtml(2,
+          fieldHtml("ชื่อ-นามสกุล (ไทย)", fullNameTH),
+          fieldHtml("Name (English)", fullNameEN)
+        )}
+        ${gridHtml(3,
+          fieldHtml("ประจำภาคการศึกษา*", data.idCard),
+          fieldHtml("โทรศัพท์", data.phone),
+          fieldHtml("อีเมล", data.email)
+        )}
+        ${gridHtml(1, fieldHtml("ที่อยู่", data.address, { multiline: true }))}
+      </div>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="print-section">
+      <div class="section-title">3. วุฒิการศึกษา</div>
+      <div class="section-body">${eduItems || '<p style="color:#999;font-size:9pt">ไม่มีข้อมูล</p>'}</div>
+    </div>
+
+    <!-- Section 4 -->
+    <div class="print-section">
+      <div class="section-title">4. ประสบการณ์การทำงาน</div>
+      <div class="section-body">${workItems || '<p style="color:#999;font-size:9pt">ไม่มีข้อมูล</p>'}</div>
+    </div>
+
+    <!-- Section 5 -->
+    <div class="print-section">
+      <div class="section-title">5. รายวิชาที่สอน</div>
+      <div class="section-body">${courseItems || '<p style="color:#999;font-size:9pt">ไม่มีข้อมูล</p>'}</div>
+    </div>
+
+    <!-- Section 6 -->
+    <div class="print-section">
+      <div class="section-title">6. คุณสมบัติ</div>
+      <div class="section-body">${qualHtml}</div>
+    </div>
+
+    <!-- Section 7 -->
+    <div class="print-section">
+      <div class="section-title">7. สัดส่วนการสอน</div>
+      <div class="section-body">
+        ${gridHtml(3,
+          fieldHtml("สัดส่วนการสอน", data.teachingProportion),
+          fieldHtml("ชั่วโมงต่อสัปดาห์", data.teachingHours),
+          fieldHtml("หมายเหตุ", data.teachingNote)
+        )}
+      </div>
+    </div>
+
+    <!-- Section 8 -->
+    <div class="print-section">
+      <div class="section-title">8. ความเชี่ยวชาญและหมายเหตุ</div>
+      <div class="section-body">
+        ${gridHtml(1, fieldHtml("ความเชี่ยวชาญ", data.expertise, { multiline: true }))}
+        ${gridHtml(1, fieldHtml("หมายเหตุ", data.note, { multiline: true }))}
+      </div>
+    </div>
+
+    <!-- Signature area -->
+    <div class="print-section" style="margin-top:16px">
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:8px">
+          <div style="text-align:center">
+            <div style="border-bottom:1px solid #666;height:40px;margin-bottom:6px"></div>
+            <div style="font-size:9pt;color:#555">ลายมือชื่อผู้สมัคร</div>
+            <div style="font-size:8pt;color:#888">วันที่ ...........................</div>
+          </div>
+          <div style="text-align:center">
+            <div style="border-bottom:1px solid #666;height:40px;margin-bottom:6px"></div>
+            <div style="font-size:9pt;color:#555">ลายมือชื่อผู้รับรอง / ประธานหลักสูตร</div>
+            <div style="font-size:8pt;color:#888">วันที่ ...........................</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;font-size:8pt;color:#aaa;margin-top:12px;border-top:1px solid #e5e7eb;padding-top:8px">
+      พิมพ์เมื่อ: ${new Date().toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric' })}
+      · ระบบบันทึกข้อมูลอาจารย์พิเศษ มหาวิทยาลัยศรีปทุม
+    </div>
+  `;
+}
+
+function loadAndRender() {
+  const container = document.getElementById('form-data-container');
+  try {
+    const records = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    if (records.length === 0) {
+      container.innerHTML = `
+        <div style="text-align:center;padding:40px;color:#666">
+          <div style="font-size:24px;margin-bottom:12px">📋</div>
+          <div style="font-size:12pt;font-weight:600">ไม่พบข้อมูลที่บันทึกไว้</div>
+          <div style="font-size:10pt;color:#999;margin-top:6px">กรุณากลับไปกรอกแบบฟอร์มและบันทึกข้อมูลก่อน</div>
+        </div>`;
+      return;
+    }
+    // Print the most recent record
+    const latest = records[0];
+    container.innerHTML = renderRecord(latest.data);
+  } catch(e) {
+    container.innerHTML = '<p style="color:red">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';
+  }
+}
+
+loadAndRender();
+
+// Auto print after fonts load
+document.fonts.ready.then(function() {
+  setTimeout(function() { window.print(); }, 500);
+});
+</script>
+
+</body>
+</html>
