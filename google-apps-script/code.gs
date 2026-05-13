@@ -146,6 +146,7 @@ function saveData(data) {
       headersToAdd.push("รายวิชา " + c + " (รหัส)");
       headersToAdd.push("รายวิชา " + c + " (ชื่อ)");
       headersToAdd.push("รายวิชา " + c + " (หน่วยกิต)");
+      headersToAdd.push("รายวิชา " + c + " (จำนวนครั้งที่สอน)");
     }
   }
 
@@ -211,6 +212,7 @@ function saveData(data) {
     rowData["รายวิชา " + num + " (รหัส)"] = cParts.code;
     rowData["รายวิชา " + num + " (ชื่อ)"] = cParts.name;
     rowData["รายวิชา " + num + " (หน่วยกิต)"] = c.credits || "";
+    rowData["รายวิชา " + num + " (จำนวนครั้งที่สอน)"] = c.teachCount || "";
   });
 
   var finalRow = [];

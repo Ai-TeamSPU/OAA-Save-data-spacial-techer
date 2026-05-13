@@ -532,7 +532,7 @@ function makeId() { return Math.random().toString(36).slice(2, 9); }
 
 const defaultEdu = () => ({ id: makeId(), level: "", curriculum: "", major: "", institution: "", year: "" });
 const defaultWork = () => ({ id: makeId(), position: "", company: "", startDate: "", endDate: "", isCurrent: false, isDirect: false });
-const defaultCourse = () => ({ id: makeId(), subject: "", credits: "", proportion: "" });
+const defaultCourse = () => ({ id: makeId(), subject: "", credits: "", teachCount: "", proportion: "" });
 
 const defaultForm = () => ({
   semester: "", faculty: "", branch: "",
@@ -787,8 +787,8 @@ function Section5({ form, set }) {
       label: "กลุ่มที่ 1: คุณวุฒิปริญญาโท หรือ มีตำแหน่งทางวิชาการ",
       subs: [
         { key: "qual1_a", label: "คุณวุฒิปริญญาโท สอดคล้องตามเกณฑ์มาตรฐานหลักสูตร พ.ศ. 2565" },
-        // ข้อ 8: แก้ข้อความ ศ./รศ./ผศ.
-        { key: "qual1_b", label: "มีตำแหน่ง ศาสตราจารย์ รองศาสตราจารย์ หรือ ผู้ช่วยศาสตราจารย์ ในสาขาวิชา", hasField: "qual1_branch", fieldPlaceholder: "ระบุสาขาวิชาตามตำแหน่งวิชาการ..." },
+        // ข้อ 8: แก้ข้อความ ศ./รศ./ผศ. (คอมเมนต์ออกตามคำขอเพราะไม่ได้ใช้แล้ว)
+        // { key: "qual1_b", label: "มีตำแหน่ง ศาสตราจารย์ รองศาสตราจารย์ หรือ ผู้ช่วยศาสตราจารย์ ในสาขาวิชา", hasField: "qual1_branch", fieldPlaceholder: "ระบุสาขาวิชาตามตำแหน่งวิชาการ..." },
       ]
     },
     {
@@ -938,7 +938,7 @@ function Section6({ form, set }) {
               </FormField>
             </FormRow>
             {course.subject && (
-              <div style={{ display: "grid", gridTemplateColumns: "140px 1fr auto", gap: "8px 12px", alignItems: "start", marginTop: 4 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "140px 1fr auto auto", gap: "8px 12px", alignItems: "start", marginTop: 4 }}>
                 <FormField label="รหัสวิชา">
                   <div style={{ ...inputStyle, background: "#f8fafc", color: "#1e293b", fontWeight: 600 }}>{codeDisplay || "—"}</div>
                 </FormField>
@@ -948,12 +948,18 @@ function Section6({ form, set }) {
                 <FormField label="หน่วยกิต" required>
                   <TextInput value={course.credits} onChange={v => updateCourse(course.id, { credits: v })} placeholder="3(3-0-6)" style={{ width: 100 }} />
                 </FormField>
+                <FormField label="จำนวนครั้งที่สอน" required>
+                  <TextInput value={course.teachCount || ""} onChange={v => updateCourse(course.id, { teachCount: v })} placeholder="ระบุจำนวนครั้ง" style={{ width: 120 }} />
+                </FormField>
               </div>
             )}
             {!course.subject && (
-              <FormRow cols={1}>
+              <FormRow cols={2}>
                 <FormField label="หน่วยกิต" required>
                   <TextInput value={course.credits} onChange={v => updateCourse(course.id, { credits: v })} placeholder="3(3-0-6)" />
+                </FormField>
+                <FormField label="จำนวนครั้งที่สอน" required>
+                  <TextInput value={course.teachCount || ""} onChange={v => updateCourse(course.id, { teachCount: v })} placeholder="ระบุจำนวนครั้ง" />
                 </FormField>
               </FormRow>
             )}
@@ -1191,7 +1197,7 @@ function App() {
         const encoded = encodeURIComponent(JSON.stringify({ ...form }));
         const url = settings.sheetsUrl + "?data=" + encoded;
         await fetch(url, { method: "GET", mode: "no-cors" });
-        
+
         setSheetsStatus("ok");
         showToast("✓ บันทึกและส่งไป Google Sheets แล้ว!", "success");
         Swal.fire({
