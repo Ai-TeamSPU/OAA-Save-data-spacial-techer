@@ -522,10 +522,17 @@ function calcDuration(startDate, endDate) {
 const { useState, useEffect, useCallback } = React;
 
 const STORAGE_KEY = "oaa_form_data_v1";
-const SETTINGS_KEY = "oaa_settings_v1";
+const SETTINGS_KEY = "oaa_settings_v2"; // เปลี่ยนคีย์เพื่อให้เคลียร์ค่าเก่าที่เคยเซฟไว้
 
 function loadSettings() {
-  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}"); } catch (e) { return {}; }
+  const defaultUrl = "https://script.google.com/macros/s/AKfycbyBp4unRUJHDzzMPOFnX5Koroz-ZPFOYZtJixL4OPYQ_gRlDzHBKJpw2cbYTgfdwJGY/exec";
+  try { 
+    const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
+    if (!saved.sheetsUrl) saved.sheetsUrl = defaultUrl;
+    return saved;
+  } catch (e) { 
+    return { sheetsUrl: defaultUrl }; 
+  }
 }
 function saveSettings(s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
 function makeId() { return Math.random().toString(36).slice(2, 9); }
