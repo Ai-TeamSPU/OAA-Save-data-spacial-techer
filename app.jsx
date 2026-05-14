@@ -525,7 +525,7 @@ const STORAGE_KEY = "oaa_form_data_v1";
 const SETTINGS_KEY = "oaa_settings_v3"; // เปลี่ยนคีย์เพื่อให้เคลียร์ค่าเก่าที่เคยเซฟไว้
 
 function loadSettings() {
-  const defaultUrl = "https://script.google.com/macros/s/AKfycbzGs5bcoqTY9lFgVhDjHBT9TOb9r37P8gzD5oXHLP8LePYiO_jjRPpv2Hu_ELNPMqzT/exec";
+  const defaultUrl = "https://script.google.com/macros/s/AKfycbyd8LeS-6wvSpNp_OkUKMNqcC5lhUtNKVr9Pt2M6zcYav5U0kG6qlcH9fkHbIfWj7_3/exec";
   try {
     const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
     if (!saved.sheetsUrl) saved.sheetsUrl = defaultUrl;
@@ -1171,14 +1171,35 @@ function App() {
   function set(fields) { setFormRaw(f => ({ ...f, ...fields })); }
   function showToast(message, type = "success") { setToast({ message, type }); }
   function handleAdminLogin() {
-    const pass = prompt("กรอกรหัสผ่าน Admin");
-
-    if (pass === "123456") {
-      setIsAdmin(true);
-      showToast("เข้าสู่โหมด Admin แล้ว", "success");
-    } else {
-      showToast("รหัสผ่านไม่ถูกต้อง", "error");
-    }
+    Swal.fire({
+      title: 'โหมด Admin',
+      input: 'password',
+      inputLabel: 'กรุณากรอกรหัสผ่าน',
+      inputPlaceholder: 'ใส่รหัสผ่านที่นี่...',
+      inputAttributes: {
+        autocapitalize: 'off',
+        autocorrect: 'off'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก',
+      confirmButtonColor: '#1a56db',
+      cancelButtonColor: '#6b7280'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        if (result.value === "123456") {
+          setIsAdmin(true);
+          showToast("เข้าสู่โหมด Admin แล้ว", "success");
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'รหัสผ่านไม่ถูกต้อง!',
+            text: 'กรุณาลองใหม่อีกครั้ง',
+            confirmButtonColor: '#ef4444'
+          });
+        }
+      }
+    });
   }
 
   async function handleSave() {
