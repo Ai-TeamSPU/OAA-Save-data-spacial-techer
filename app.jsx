@@ -1108,7 +1108,26 @@ function SettingsModal({ onClose }) {
 // ===== Saved Records List =====
 function RecordsList({ records, onLoad, onDelete }) {
   const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  
   if (records.length === 0) return null;
+
+  const filteredRecords = records.filter(rec => {
+    const fullName = `${rec.data.titlePrefix || ""} ${rec.data.firstNameTH || ""} ${rec.data.lastNameTH || ""}`.toLowerCase();
+    return fullName.includes(searchTerm.toLowerCase());
+  });
+
+  const totalPages = Math.ceil(filteredRecords.length / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedRecords = filteredRecords.slice(startIndex, startIndex + itemsPerPage);
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset page on search
+  };
+
   return (
     <div style={{ marginBottom: 16 }}>
       <button type="button" onClick={() => setOpen(!open)} style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#374151", fontFamily: "inherit", width: "100%", justifyContent: "space-between" }}>
@@ -1116,19 +1135,57 @@ function RecordsList({ records, onLoad, onDelete }) {
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}><path d="M4 6l4 4 4-4" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
       {open && (
-        <div style={{ border: "1px solid #e2e8f0", borderTop: "none", borderRadius: "0 0 8px 8px", background: "#fff" }}>
-          {records.map((rec, i) => (
-            <div key={rec.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderBottom: i < records.length - 1 ? "1px solid #f1f5f9" : "none" }}>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#1e293b" }}>{rec.data.titlePrefix} {rec.data.firstNameTH} {rec.data.lastNameTH}</div>
-                <div style={{ fontSize: 11, color: "#6b7280" }}>{rec.data.faculty} · {rec.data.semester} · {new Date(rec.savedAt).toLocaleDateString("th-TH")}</div>
+        <div style={{ border: "1px solid #e2e8f0", borderTop: "none", borderRadius: "0 0 8px 8px", background: "#fff", padding: "10px" }}>
+          <div style={{ marginBottom: 10 }}>
+            <input 
+              type="text" 
+              placeholder="🔍 ค้นหารายชื่ออาจารย์..." 
+              value={searchTerm}
+              onChange={handleSearch}
+              style={{ width: "100%", padding: "8px 12px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: 13, fontFamily: "inherit", boxSizing: "border-box" }}
+            />
+          </div>
+          <div>
+            {paginatedRecords.length > 0 ? paginatedRecords.map((rec, i) => (
+              <div key={rec.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderBottom: i < paginatedRecords.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#1e293b" }}>{rec.data.titlePrefix} {rec.data.firstNameTH} {rec.data.lastNameTH}</div>
+                  <div style={{ fontSize: 11, color: "#6b7280" }}>{rec.data.faculty} · {rec.data.semester} · {new Date(rec.savedAt).toLocaleDateString("th-TH")}</div>
+                </div>
+                <div style={{ display: "flex", gap: 4 }}>
+                  <button type="button" onClick={() => onLoad(rec)} style={{ background: "#eff6ff", border: "none", borderRadius: 6, padding: "5px 10px", cursor: "pointer", fontSize: 12, color: "#1a56db", fontWeight: 600, fontFamily: "inherit" }}>โหลด</button>
+                  <button type="button" onClick={() => onDelete(rec.id)} style={{ background: "#fff1f2", border: "none", borderRadius: 6, padding: "5px 10px", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 600, fontFamily: "inherit" }}>ลบ</button>
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 4 }}>
-                <button type="button" onClick={() => onLoad(rec)} style={{ background: "#eff6ff", border: "none", borderRadius: 6, padding: "5px 10px", cursor: "pointer", fontSize: 12, color: "#1a56db", fontWeight: 600, fontFamily: "inherit" }}>โหลด</button>
-                <button type="button" onClick={() => onDelete(rec.id)} style={{ background: "#fff1f2", border: "none", borderRadius: 6, padding: "5px 10px", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 600, fontFamily: "inherit" }}>ลบ</button>
-              </div>
+            )) : (
+              <div style={{ padding: "16px", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>ไม่พบรายชื่อที่ค้นหา</div>
+            )}
+          </div>
+          
+          {/* Pagination Controls */}
+          {filteredRecords.length > itemsPerPage && (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px 4px", borderTop: "1px solid #e2e8f0", marginTop: 8 }}>
+              <button 
+                type="button" 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                style={{ background: currentPage === 1 ? "#f8fafc" : "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 6, padding: "5px 12px", cursor: currentPage === 1 ? "not-allowed" : "pointer", fontSize: 12, color: currentPage === 1 ? "#94a3b8" : "#475569", fontWeight: 600, fontFamily: "inherit" }}
+              >
+                ← ก่อนหน้า
+              </button>
+              <span style={{ fontSize: 12, color: "#64748b", fontWeight: 500 }}>
+                หน้าที่ {currentPage} จาก {totalPages}
+              </span>
+              <button 
+                type="button" 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                style={{ background: currentPage === totalPages ? "#f8fafc" : "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 6, padding: "5px 12px", cursor: currentPage === totalPages ? "not-allowed" : "pointer", fontSize: 12, color: currentPage === totalPages ? "#94a3b8" : "#475569", fontWeight: 600, fontFamily: "inherit" }}
+              >
+                ถัดไป →
+              </button>
             </div>
-          ))}
+          )}
         </div>
       )}
     </div>
