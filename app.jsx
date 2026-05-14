@@ -522,16 +522,16 @@ function calcDuration(startDate, endDate) {
 const { useState, useEffect, useCallback } = React;
 
 const STORAGE_KEY = "oaa_form_data_v1";
-const SETTINGS_KEY = "oaa_settings_v2"; // เปลี่ยนคีย์เพื่อให้เคลียร์ค่าเก่าที่เคยเซฟไว้
+const SETTINGS_KEY = "oaa_settings_v3"; // เปลี่ยนคีย์เพื่อให้เคลียร์ค่าเก่าที่เคยเซฟไว้
 
 function loadSettings() {
-  const defaultUrl = "https://script.google.com/macros/s/AKfycbyBp4unRUJHDzzMPOFnX5Koroz-ZPFOYZtJixL4OPYQ_gRlDzHBKJpw2cbYTgfdwJGY/exec";
-  try { 
+  const defaultUrl = "https://script.google.com/macros/s/AKfycbzGs5bcoqTY9lFgVhDjHBT9TOb9r37P8gzD5oXHLP8LePYiO_jjRPpv2Hu_ELNPMqzT/exec";
+  try {
     const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
     if (!saved.sheetsUrl) saved.sheetsUrl = defaultUrl;
     return saved;
-  } catch (e) { 
-    return { sheetsUrl: defaultUrl }; 
+  } catch (e) {
+    return { sheetsUrl: defaultUrl };
   }
 }
 function saveSettings(s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
