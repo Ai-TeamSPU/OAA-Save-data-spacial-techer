@@ -57,8 +57,8 @@ function saveData(data) {
       "วุฒิ 2 (ระดับ)", "วุฒิ 2 (ปี)", "วุฒิ 2 (หลักสูตร)", "วุฒิ 2 (สาขา)", "วุฒิ 2 (สถาบัน)",
       "วุฒิ 3 (ระดับ)", "วุฒิ 3 (ปี)", "วุฒิ 3 (หลักสูตร)", "วุฒิ 3 (สาขา)", "วุฒิ 3 (สถาบัน)",
       "ประสบการณ์ 1 (ตำแหน่ง)", "ประสบการณ์ 1 (บริษัท)", "ประสบการณ์ 1 (เริ่ม)", "ประสบการณ์ 1 (สิ้นสุด)", "ประสบการณ์ 1 (ระยะเวลา)",
-      "รายวิชา 1 (รหัส)", "รายวิชา 1 (ชื่อ)", "รายวิชา 1 (หน่วยกิต)", "รายวิชา 1 (จำนวนครั้งที่สอน)",
-      "รายวิชา 2 (รหัส)", "รายวิชา 2 (ชื่อ)", "รายวิชา 2 (หน่วยกิต)", "รายวิชา 2 (จำนวนครั้งที่สอน)",
+      "รายวิชา 1 (รหัส)", "รายวิชา 1 (ชื่อ)", "รายวิชา 1 (ระดับบัณฑิต)", "รายวิชา 1 (หน่วยกิต)", "รายวิชา 1 (จำนวนครั้งที่สอน)",
+      "รายวิชา 2 (รหัส)", "รายวิชา 2 (ชื่อ)", "รายวิชา 2 (ระดับบัณฑิต)", "รายวิชา 2 (หน่วยกิต)", "รายวิชา 2 (จำนวนครั้งที่สอน)",
       "สัดส่วนการสอน", "ชั่วโมง/สัปดาห์",
       "กลุ่ม", "ประเภทอาจารย์พิเศษ", "รายละเอียด",
       "ความเชี่ยวชาญ", "หมายเหตุ",
@@ -148,11 +148,32 @@ function saveData(data) {
   var headersToAdd = [];
   for (var c = 1; c <= courses.length; c++) {
     var codeHeader = "รายวิชา " + c + " (รหัส)";
+    var nameHeader = "รายวิชา " + c + " (ชื่อ)";
+    var degreeHeader = "รายวิชา " + c + " (ระดับบัณฑิต)";
+    var creditHeader = "รายวิชา " + c + " (หน่วยกิต)";
+    var countHeader = "รายวิชา " + c + " (จำนวนครั้งที่สอน)";
+
     if (sheetHeaders.indexOf(codeHeader) === -1) {
-      headersToAdd.push("รายวิชา " + c + " (รหัส)");
-      headersToAdd.push("รายวิชา " + c + " (ชื่อ)");
-      headersToAdd.push("รายวิชา " + c + " (หน่วยกิต)");
-      headersToAdd.push("รายวิชา " + c + " (จำนวนครั้งที่สอน)");
+      headersToAdd.push(codeHeader);
+      headersToAdd.push(nameHeader);
+      headersToAdd.push(degreeHeader);
+      headersToAdd.push(creditHeader);
+      headersToAdd.push(countHeader);
+    } else {
+      // Auto-repair: ถ้ารหัสวิชามีแล้ว แต่ยังไม่มีคอลัมน์ "ระดับบัณฑิต" (เพราะเป็นชีตเก่า)
+      if (sheetHeaders.indexOf(degreeHeader) === -1) {
+        var nameIndex = sheetHeaders.indexOf(nameHeader);
+        if (nameIndex !== -1) {
+          // แทรกคอลัมน์ใหม่ต่อจากคอลัมน์ชื่อวิชา (บวก 2 เพราะ Google Sheet index เริ่มที่ 1)
+          sheet.insertColumnAfter(nameIndex + 1);
+          sheet.getRange(1, nameIndex + 2).setValue(degreeHeader).setFontWeight("bold").setBackground("#1e3a8a").setFontColor("#ffffff");
+          // โหลด headers ใหม่
+          sheetHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+          // อัปเดต insertIndex สำหรับคอลัมน์ที่อาจต้องเพิ่มใหม่
+          insertIndex = sheetHeaders.indexOf("สัดส่วนการสอน");
+          if (insertIndex === -1) insertIndex = sheetHeaders.length;
+        }
+      }
     }
   }
 
@@ -223,6 +244,7 @@ function saveData(data) {
     var num = index + 1;
     rowData["รายวิชา " + num + " (รหัส)"] = cParts.code;
     rowData["รายวิชา " + num + " (ชื่อ)"] = cParts.name;
+    rowData["รายวิชา " + num + " (ระดับบัณฑิต)"] = c.degreeLevel || "";
     rowData["รายวิชา " + num + " (หน่วยกิต)"] = c.credits || "";
     rowData["รายวิชา " + num + " (จำนวนครั้งที่สอน)"] = c.teachCount || "";
   });

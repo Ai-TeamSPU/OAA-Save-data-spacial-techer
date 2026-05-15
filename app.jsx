@@ -525,7 +525,7 @@ const STORAGE_KEY = "oaa_form_data_v1";
 const SETTINGS_KEY = "oaa_settings_v3"; // เปลี่ยนคีย์เพื่อให้เคลียร์ค่าเก่าที่เคยเซฟไว้
 
 function loadSettings() {
-  const defaultUrl = "https://script.google.com/macros/s/AKfycbyd8LeS-6wvSpNp_OkUKMNqcC5lhUtNKVr9Pt2M6zcYav5U0kG6qlcH9fkHbIfWj7_3/exec";
+  const defaultUrl = "https://script.google.com/macros/s/AKfycbzB4lCninSezqZF8Bu66_0z0e0FFRr60A9O61pqOVZy01K5g8KVV0tY40LD-jUui7Id/exec";
   try {
     const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
     if (!saved.sheetsUrl) saved.sheetsUrl = defaultUrl;
@@ -539,7 +539,7 @@ function makeId() { return Math.random().toString(36).slice(2, 9); }
 
 const defaultEdu = () => ({ id: makeId(), level: "", curriculum: "", major: "", institution: "", year: "" });
 const defaultWork = () => ({ id: makeId(), position: "", company: "", startDate: "", endDate: "", isCurrent: false, isDirect: false });
-const defaultCourse = () => ({ id: makeId(), subject: "", credits: "", teachCount: "", proportion: "" });
+const defaultCourse = () => ({ id: makeId(), subject: "", credits: "", teachCount: "", proportion: "", degreeLevel: "" });
 
 const defaultForm = () => ({
   semester: "", faculty: "", branch: "",
@@ -944,6 +944,11 @@ function Section6({ form, set }) {
                   options={SUBJECTS} placeholder="-- ค้นหา รหัส / ชื่อวิชา --" />
               </FormField>
             </FormRow>
+            <FormRow cols={1}>
+              <FormField label="ระดับบัณฑิต" required>
+                <SelectInput value={course.degreeLevel || ""} onChange={v => updateCourse(course.id, { degreeLevel: v })} options={["ปริญญาเอก", "ปริญญาโท", "ปริญญาตรี"]} placeholder="-- เลือกระดับบัณฑิต --" />
+              </FormField>
+            </FormRow>
             {course.subject && (
               <div style={{ display: "grid", gridTemplateColumns: "140px 1fr auto auto", gap: "8px 12px", alignItems: "start", marginTop: 4 }}>
                 <FormField label="รหัสวิชา">
@@ -1106,12 +1111,12 @@ function SettingsModal({ onClose }) {
 }
 
 // ===== Saved Records List =====
-function RecordsList({ records, onLoad, onDelete }) {
+function RecordsList({ records, onLoad, onDelete, onPrint }) {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  
+
   if (records.length === 0) return null;
 
   const filteredRecords = records.filter(rec => {
@@ -1137,9 +1142,9 @@ function RecordsList({ records, onLoad, onDelete }) {
       {open && (
         <div style={{ border: "1px solid #e2e8f0", borderTop: "none", borderRadius: "0 0 8px 8px", background: "#fff", padding: "10px" }}>
           <div style={{ marginBottom: 10 }}>
-            <input 
-              type="text" 
-              placeholder="🔍 ค้นหารายชื่ออาจารย์..." 
+            <input
+              type="text"
+              placeholder="ค้นหารายชื่ออาจารย์..."
               value={searchTerm}
               onChange={handleSearch}
               style={{ width: "100%", padding: "8px 12px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: 13, fontFamily: "inherit", boxSizing: "border-box" }}
@@ -1153,6 +1158,7 @@ function RecordsList({ records, onLoad, onDelete }) {
                   <div style={{ fontSize: 11, color: "#6b7280" }}>{rec.data.faculty} · {rec.data.semester} · {new Date(rec.savedAt).toLocaleDateString("th-TH")}</div>
                 </div>
                 <div style={{ display: "flex", gap: 4 }}>
+                  <button type="button" onClick={() => onPrint(rec.id)} style={{ background: "#f0fdf4", border: "none", borderRadius: 6, padding: "5px 10px", cursor: "pointer", fontSize: 12, color: "#166534", fontWeight: 600, fontFamily: "inherit" }}>พิมพ์</button>
                   <button type="button" onClick={() => onLoad(rec)} style={{ background: "#eff6ff", border: "none", borderRadius: 6, padding: "5px 10px", cursor: "pointer", fontSize: 12, color: "#1a56db", fontWeight: 600, fontFamily: "inherit" }}>โหลด</button>
                   <button type="button" onClick={() => onDelete(rec.id)} style={{ background: "#fff1f2", border: "none", borderRadius: 6, padding: "5px 10px", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 600, fontFamily: "inherit" }}>ลบ</button>
                 </div>
@@ -1161,12 +1167,12 @@ function RecordsList({ records, onLoad, onDelete }) {
               <div style={{ padding: "16px", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>ไม่พบรายชื่อที่ค้นหา</div>
             )}
           </div>
-          
+
           {/* Pagination Controls */}
           {filteredRecords.length > itemsPerPage && (
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px 4px", borderTop: "1px solid #e2e8f0", marginTop: 8 }}>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
                 style={{ background: currentPage === 1 ? "#f8fafc" : "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 6, padding: "5px 12px", cursor: currentPage === 1 ? "not-allowed" : "pointer", fontSize: 12, color: currentPage === 1 ? "#94a3b8" : "#475569", fontWeight: 600, fontFamily: "inherit" }}
@@ -1176,8 +1182,8 @@ function RecordsList({ records, onLoad, onDelete }) {
               <span style={{ fontSize: 12, color: "#64748b", fontWeight: 500 }}>
                 หน้าที่ {currentPage} จาก {totalPages}
               </span>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
                 style={{ background: currentPage === totalPages ? "#f8fafc" : "#f1f5f9", border: "1px solid #e2e8f0", borderRadius: 6, padding: "5px 12px", cursor: currentPage === totalPages ? "not-allowed" : "pointer", fontSize: 12, color: currentPage === totalPages ? "#94a3b8" : "#475569", fontWeight: 600, fontFamily: "inherit" }}
@@ -1323,15 +1329,22 @@ function App() {
       setRecords(updated); localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)); showToast("ลบข้อมูลเรียบร้อยแล้ว", "info");
     }
   }
-  function handleExport() {
-    if (records.length === 0) { showToast("ไม่มีข้อมูลสำหรับส่งออก", "error"); return; }
-    const blob = new Blob([JSON.stringify(records, null, 2)], { type: "application/json" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-    a.download = `อาจารย์พิเศษ_${new Date().toLocaleDateString("th-TH").replace(/\//g, "-")}.json`;
-    a.click(); showToast("ส่งออกข้อมูลสำเร็จ", "success");
-  }
+  // function handleExport() {
+  //   if (records.length === 0) { showToast("ไม่มีข้อมูลสำหรับส่งออก", "error"); return; }
+  //   const blob = new Blob([JSON.stringify(records, null, 2)], { type: "application/json" });
+  //   const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  //   a.download = `อาจารย์พิเศษ_${new Date().toLocaleDateString("th-TH").replace(/\//g, "-")}.json`;
+  //   a.click(); showToast("ส่งออกข้อมูลสำเร็จ", "success");
+  // }
+
   // ข้อ 10: พิมพ์ PDF
-  function handlePrint() { window.open("index-print.html", "_blank"); }
+  function handlePrint(id) {
+    if (typeof id === 'string') {
+      window.open("index-print.html?id=" + id, "_blank");
+    } else {
+      window.open("index-print.html", "_blank");
+    }
+  }
 
   return (
     <div style={{ minHeight: "100vh", background: "#f1f5f9" }}>
@@ -1391,7 +1404,7 @@ function App() {
 
       {/* Content */}
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "24px 16px 80px" }}>
-        <RecordsList records={records} onLoad={handleLoad} onDelete={handleDelete} />
+        <RecordsList records={records} onLoad={handleLoad} onDelete={handleDelete} onPrint={handlePrint} />
         <Section1 form={form} set={set} />
         <Section2 form={form} set={set} />
         <Section3 form={form} set={set} />
@@ -1416,10 +1429,10 @@ function App() {
             style={{ background: "#fff", color: "#6b7280", border: "1px solid #d1d5db", borderRadius: 8, padding: "10px 20px", cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "inherit" }}>
             🗑 ล้างฟอร์ม
           </button>
-          <button type="button" onClick={handleExport}
+          {/* <button type="button" onClick={handleExport}
             style={{ background: "#fff", color: "#059669", border: "1px solid #6ee7b7", borderRadius: 8, padding: "10px 20px", cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "inherit" }}>
             📤 ส่งออก JSON
-          </button>
+          </button> */}
         </div>
       </div>
 
