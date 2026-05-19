@@ -17,6 +17,9 @@ var SHEET_NAME = "อาจารย์พิเศษ";
 // รับข้อมูลผ่าน GET (แก้ปัญหา CORS จาก browser)
 function doGet(e) {
   try {
+    if (e.parameter.action === "read") {
+      return getRecords();
+    }
     var payload = e.parameter.data;
     if (!payload) {
       return ContentService
@@ -61,7 +64,7 @@ function saveData(data) {
       "รายวิชา 2 (รหัส)", "รายวิชา 2 (ชื่อ)", "รายวิชา 2 (ระดับบัณฑิต)", "รายวิชา 2 (หน่วยกิต)", "รายวิชา 2 (จำนวนครั้งที่สอน)",
       "สัดส่วนการสอน", "ชั่วโมง/สัปดาห์",
       "กลุ่ม", "ประเภทอาจารย์พิเศษ", "รายละเอียด",
-      "ความเชี่ยวชาญ", "หมายเหตุ",
+      "ความเชี่ยวชาญ", "หมายเหตุ", "ความยินยอม (PDPA)", "RawJSON"
     ];
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#1e3a8a").setFontColor("#ffffff");
@@ -160,6 +163,7 @@ function saveData(data) {
       headersToAdd.push(creditHeader);
       headersToAdd.push(countHeader);
     } else {
+
       // Auto-repair: ถ้ารหัสวิชามีแล้ว แต่ยังไม่มีคอลัมน์ "ระดับบัณฑิต" (เพราะเป็นชีตเก่า)
       if (sheetHeaders.indexOf(degreeHeader) === -1) {
         var nameIndex = sheetHeaders.indexOf(nameHeader);
@@ -225,7 +229,9 @@ function saveData(data) {
     "ประเภทอาจารย์พิเศษ": teacherType,
     "รายละเอียด": qualDetails,
     "ความเชี่ยวชาญ": data.expertise || "",
-    "หมายเหตุ": data.note || ""
+    "หมายเหตุ": data.note || "",
+    "ความยินยอม (PDPA)": data.pdpaConsent ? "ความยินยอมข้อมูลส่วนบุคคล (PDPA): ข้าพเจ้ายินยอมให้ มหาวิทยาลัยศรีปทุม เก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้า เพื่อวัตถุประสงค์ในการบันทึกข้อมูลอาจารย์พิเศษเเละใช้ภายในมหาลัย ตามที่ระบุไว้ในนโยบายความเป็นส่วนตัว" : "",
+    "RawJSON": JSON.stringify(data)
   };
 
   // แมพข้อมูลประสบการณ์แบบไดนามิก
@@ -249,6 +255,22 @@ function saveData(data) {
     rowData["รายวิชา " + num + " (จำนวนครั้งที่สอน)"] = c.teachCount || "";
   });
 
+  // ตรวจสอบและเพิ่มคอลัมน์ ความยินยอม (PDPA) หากเป็นชีตเก่า
+  if (sheetHeaders.indexOf("ความยินยอม (PDPA)") === -1) {
+    var lastCol = sheet.getLastColumn();
+    sheet.insertColumnAfter(lastCol);
+    sheet.getRange(1, lastCol + 1).setValue("ความยินยอม (PDPA)").setFontWeight("bold").setBackground("#1e3a8a").setFontColor("#ffffff");
+    sheetHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  }
+
+  // ตรวจสอบและเพิ่มคอลัมน์ RawJSON หากเป็นชีตเก่า
+  if (sheetHeaders.indexOf("RawJSON") === -1) {
+    var lastCol = sheet.getLastColumn();
+    sheet.insertColumnAfter(lastCol);
+    sheet.getRange(1, lastCol + 1).setValue("RawJSON").setFontWeight("bold").setBackground("#1e3a8a").setFontColor("#ffffff");
+    sheetHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  }
+
   var finalRow = [];
   for (var i = 0; i < sheetHeaders.length; i++) {
     var h = sheetHeaders[i] ? sheetHeaders[i].toString().trim() : "";
@@ -261,5 +283,66 @@ function saveData(data) {
 
   return ContentService
     .createTextOutput(JSON.stringify({ status: "ok", message: "บันทึกข้อมูลสำเร็จ" }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getRecords() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "ok", data: [] }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  var dataRange = sheet.getDataRange();
+  var values = dataRange.getValues();
+  if (values.length <= 1) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "ok", data: [] }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  var headers = values[0];
+  var rawJsonIndex = headers.indexOf("RawJSON");
+  var records = [];
+
+  for (var i = 1; i < values.length; i++) {
+    var row = values[i];
+    var rawData = null;
+    
+    // ถ้ามี RawJSON ดึงออกมาใช้
+    if (rawJsonIndex !== -1 && row[rawJsonIndex]) {
+      try {
+        rawData = JSON.parse(row[rawJsonIndex]);
+      } catch (e) {
+        rawData = null;
+      }
+    }
+    
+    // ถ้าไม่มี RawJSON (ข้อมูลเก่า) สร้าง JSON ขึ้นมาหลวมๆ เพื่อแสดงผล
+    if (!rawData) {
+      rawData = {
+        titlePrefix: row[headers.indexOf("คำนำหน้า")] || "",
+        firstNameTH: row[headers.indexOf("ชื่อ (ไทย)")] || "",
+        lastNameTH: row[headers.indexOf("นามสกุล (ไทย)")] || "",
+        faculty: row[headers.indexOf("คณะ")] || "",
+        semester: row[headers.indexOf("ภาคการศึกษา")] || "",
+        _isLegacy: true // flag ไว้ให้รู้ว่าเป็นข้อมูลเก่า
+      };
+    }
+    
+    records.push({
+      id: "sync_" + i, // สร้าง id จำลองสำหรับระบบหน้าเว็บ
+      savedAt: row[headers.indexOf("วันที่บันทึก")] || new Date().toISOString(),
+      data: rawData
+    });
+  }
+
+  // เรียงให้ข้อมูลล่าสุดอยู่บน
+  records.reverse();
+
+  return ContentService
+    .createTextOutput(JSON.stringify({ status: "ok", data: records }))
     .setMimeType(ContentService.MimeType.JSON);
 }

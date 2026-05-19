@@ -487,19 +487,28 @@
       <div class="section-body">
         ${gridHtml(1, fieldHtml("ความเชี่ยวชาญ", data.expertise, { multiline: true }))}
         ${gridHtml(1, fieldHtml("หมายเหตุ", data.note, { multiline: true }))}
+        ${data.pdpaConsent ? `
+        <div class="field-item">
+          <div class="field-label">ความยินยอมข้อมูลส่วนบุคคล (PDPA)</div>
+          <div class="field-value field-value-multiline" style="display: flex; gap: 8px; align-items: flex-start;">
+            <div class="checkbox-box" style="margin-top: 2px;">✓</div>
+            <span style="flex: 1;">ข้าพเจ้ายินยอมให้ มหาวิทยาลัยศรีปทุม เก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้า เพื่อวัตถุประสงค์ในการบันทึกข้อมูลอาจารย์พิเศษเเละใช้ภายในมหาลัย ตามที่ระบุไว้ในนโยบายความเป็นส่วนตัว</span>
+          </div>
+        </div>
+        ` : ''}
       </div>
     </div>
 
     <!-- Signature area -->
     <div class="print-section" style="margin-top:16px">
       <div class="section-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:8px">
-          <div style="text-align:center">
+        <div style="display:flex;justify-content:center;margin-top:8px">
+          <!-- <div style="text-align:center; width:250px">
             <div style="border-bottom:1px solid #666;height:40px;margin-bottom:6px"></div>
             <div style="font-size:9pt;color:#555">ลายมือชื่อผู้สมัคร</div>
             <div style="font-size:8pt;color:#888">วันที่ ...........................</div>
-          </div>
-          <div style="text-align:center">
+          </div> -->
+          <div style="text-align:center; width:250px">
             <div style="border-bottom:1px solid #666;height:40px;margin-bottom:6px"></div>
             <div style="font-size:9pt;color:#555">ลายมือชื่อผู้รับรอง / ประธานหลักสูตร</div>
             <div style="font-size:8pt;color:#888">วันที่ ...........................</div>
@@ -531,16 +540,16 @@
 
         const params = new URLSearchParams(window.location.search);
         const targetId = params.get("id");
-        
+
         let recordToPrint;
         if (targetId) {
           recordToPrint = records.find(r => r.id === targetId);
         }
-        
+
         if (!recordToPrint) {
           recordToPrint = records[0]; // fallback to latest if id not found
         }
-        
+
         container.innerHTML = renderRecord(recordToPrint.data);
       } catch (e) {
         container.innerHTML = '<p style="color:red">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>';

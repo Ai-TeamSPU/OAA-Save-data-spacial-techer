@@ -525,7 +525,7 @@ const STORAGE_KEY = "oaa_form_data_v1";
 const SETTINGS_KEY = "oaa_settings_v3"; // เปลี่ยนคีย์เพื่อให้เคลียร์ค่าเก่าที่เคยเซฟไว้
 
 function loadSettings() {
-  const defaultUrl = "https://script.google.com/macros/s/AKfycbzB4lCninSezqZF8Bu66_0z0e0FFRr60A9O61pqOVZy01K5g8KVV0tY40LD-jUui7Id/exec";
+  const defaultUrl = "https://script.google.com/macros/s/AKfycbxQbetJolCbRU96S1gNZCZICbLjqPL5Atcytb2Z5udNzuCZkcUoSuo4sG2943w3xwwF/exec";
   try {
     const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
     if (!saved.sheetsUrl) saved.sheetsUrl = defaultUrl;
@@ -553,6 +553,7 @@ const defaultForm = () => ({
   teachingProportion: "",
   teachingHours: "", teachingNote: "",
   expertise: "", note: "",
+  pdpaConsent: false
 });
 
 // ===== Section 1 =====
@@ -1051,6 +1052,15 @@ function Section8({ form, set }) {
             placeholder="หมายเหตุเพิ่มเติม" rows={2} style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }} />
         </FormField>
       </FormRow>
+      <div style={{ marginTop: 16, padding: 12, background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0" }}>
+        <label style={{ display: "flex", alignItems: "flex-start", cursor: "pointer", gap: 10 }}>
+          <input type="checkbox" checked={form.pdpaConsent || false} onChange={e => set({ pdpaConsent: e.target.checked })}
+            style={{ width: 18, height: 18, marginTop: 2, cursor: "pointer", accentColor: "#9333ea" }} />
+          <span style={{ fontSize: 13, lineHeight: 1.6, color: "#334155" }}>
+            <b>ความยินยอมข้อมูลส่วนบุคคล (PDPA):</b> ข้าพเจ้ายินยอมให้ มหาวิทยาลัยศรีปทุม เก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้า เพื่อวัตถุประสงค์ในการบันทึกข้อมูลอาจารย์พิเศษเเละใช้ภายในมหาลัย ตามที่ระบุไว้ในนโยบายความเป็นส่วนตัว
+          </span>
+        </label>
+      </div>
     </Card>
   );
 }
@@ -1268,6 +1278,7 @@ function App() {
   async function handleSave() {
     if (!form.semester || !form.faculty || !form.branch) { showToast("กรุณากรอกข้อมูลภาคการศึกษา คณะ และสาขาวิชา", "error"); return; }
     if (!form.firstNameTH || !form.lastNameTH) { showToast("กรุณากรอกชื่อ-นามสกุล (ภาษาไทย)", "error"); return; }
+    if (!form.pdpaConsent) { showToast("กรุณากดยอมรับการเก็บรวบรวมข้อมูลส่วนบุคคล (PDPA) ในข้อ 8 ก่อนบันทึกข้อมูล", "error"); return; }
 
     // Validate qual1_b requires its input field
     if (form.qualSubs?.qual1_b && !form.qualFields?.qual1_branch?.trim()) {
