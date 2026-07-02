@@ -329,12 +329,12 @@
     <div class="edu-item">
       <div class="item-label">วุฒิการศึกษาที่ ${i + 1}</div>
       ${gridHtml(2,
-        fieldHtml("ระดับ", edu.level),
-        fieldHtml("ปีที่สำเร็จ (พ.ศ.)", edu.year)
+        fieldHtml("ระดับการศึกษา", edu.level),
+        fieldHtml("ปีที่สำเร็จการศึกษา (พ.ศ.)", edu.year)
       )}
       ${gridHtml(1, fieldHtml("หลักสูตร", edu.curriculum))}
       ${gridHtml(2,
-        fieldHtml("สาขาวิชา", edu.major),
+        // fieldHtml("สาขาวิชา", edu.major),
         fieldHtml("สถาบัน", edu.institution)
       )}
     </div>`).join('');
@@ -354,18 +354,28 @@
       )}
     </div>`).join('');
 
+      // === Awards & Achievements ===
+      const awardItems = (data.awards || []).map((a, i) => `
+    <div class="work-item" style="border-color: #059669">
+      <div class="item-label" style="color:#059669">ผลงาน/รางวัลที่ ${i + 1}</div>
+      ${gridHtml(2,
+        fieldHtml("ชื่อรางวัล / ผลงานที่เกี่ยวข้อง", a.title),
+        fieldHtml("ลิงก์ผลงาน", a.link)
+      )}
+    </div>`).join('');
+
       // === Courses ===
       const courseItems = (data.courses || []).map((c, i) => {
         return `<div class="course-item">
       <div class="item-label" style="color:#dc6b19">รายวิชาที่ ${i + 1}</div>
       ${gridHtml(2,
           fieldHtml("รายวิชา (รหัส - ชื่อ)", c.subject),
-          fieldHtml("ระดับบัณฑิต", c.degreeLevel)
+          fieldHtml("ระดับการศึกษา", c.degreeLevel)
         )}
       ${gridHtml(3,
           fieldHtml("หน่วยกิต", c.credits),
-          fieldHtml("จำนวนครั้งที่สอน", c.teachCount),
-          fieldHtml("สัดส่วนการสอน", c.proportion)
+          // fieldHtml("จำนวนครั้งที่สอน", c.teachCount),
+          // fieldHtml("สัดส่วนการสอน", c.proportion)
         )}
     </div>`;
       }).join('');
@@ -376,24 +386,24 @@
 
       const qualGroups = [
         {
-          label: "กลุ่มที่ 1: คุณวุฒิปริญญาโท สอดคล้องตามเกณฑ์มาตรฐานหลักสูตร พ.ศ. 2565",
+          label: "กลุ่มที่ 1",
           result: "อาจารย์พิเศษ", color: "#1a56db",
           subs: [
-            { key: "qual1_a", label: "คุณวุฒิปริญญาโท สอดคล้องตามเกณฑ์มาตรฐานหลักสูตร พ.ศ. 2565 หรือ" },
-            { key: "qual1_b", label: "มีตำแหน่งผู้ช่วยศาสตราจารย์ หรือรองศาสตราจารย์ ในสาขาวิชา: " + val(fields["qual1_branch"]) },
+            { key: "qual1_a", label: "คุณวุฒิปริญญาโท สอดคล้องตามเกณฑ์มาตรฐานหลักสูตร" },
+            { key: "qual1_b", label: "มีตำแหน่งผู้ช่วยศาสตราจารย์ หรือรองศาสตราจารย์" + val(fields["qual1_branch"]) },
           ]
         },
         {
-          label: "กลุ่มที่ 2: คุณวุฒิปริญญาตรี + ประสบการณ์ 5 ปีขึ้นไป",
+          label: "กลุ่มที่ 2",
           result: "อาจารย์พิเศษร่วมสอน", color: "#059669",
           subs: [
             { key: "qual2_a", label: "ประสบการณ์ 5 ปีขึ้นไป" + (fields["qual2_exp_years"] ? ` (รวม ${fields["qual2_exp_years"]} ปี)` : "") },
-            { key: "qual2_b", label: "มีตำแหน่งผู้ช่วยศาสตราจารย์/รองศาสตราจารย์ ในสาขาวิชา: " + val(fields["qual2_branch"]) },
+            { key: "qual2_b", label: "มีตำแหน่งผู้ช่วยศาสตราจารย์/รองศาสตราจารย์" + val(fields["qual2_branch"]) },
             { key: "qual2_c", label: "มีความรู้/ประสบการณ์เป็นที่ยอมรับ สัมพันธ์กับรายวิชาที่สอน" },
           ]
         },
         {
-          label: "กลุ่มที่ 3: คุณวุฒิปริญญาตรี + ประสบการณ์น้อยกว่า 5 ปี",
+          label: "กลุ่มที่ 3",
           result: "อาจารย์พิเศษช่วยสอน", color: "#dc6b19",
           subs: [
             { key: "qual3_a", label: "ประสบการณ์น้อยกว่า 5 ปี" + (fields["qual3_exp_years"] ? ` (รวม ${fields["qual3_exp_years"]} ปี)` : "") },
@@ -439,7 +449,7 @@
         fieldHtml("Name (English)", fullNameEN)
       )}
         ${gridHtml(2,
-        fieldHtml("โทรศัพท์", data.phone),
+        fieldHtml("หมายเลขโทรศัพท์", data.phone),
         fieldHtml("อีเมล", data.email)
       )}
         ${gridHtml(1, fieldHtml("ที่อยู่", data.address, { multiline: true }))}
@@ -472,50 +482,20 @@
 
     <!-- Section 7 -->
     <div class="print-section">
-      <div class="section-title">7. สัดส่วนการสอน</div>
+      <div class="section-title">7. ความยินยอมข้อมูลส่วนบุคคล (PDPA)</div>
       <div class="section-body">
-        ${gridHtml(2,
-        fieldHtml("ชั่วโมงต่อสัปดาห์", data.teachingHours),
-        fieldHtml("หมายเหตุ", data.teachingNote)
-      )}
-      </div>
-    </div>
-
-    <!-- Section 8 -->
-    <div class="print-section">
-      <div class="section-title">8. ความเชี่ยวชาญและหมายเหตุ</div>
-      <div class="section-body">
-        ${gridHtml(1, fieldHtml("ความเชี่ยวชาญ", data.expertise, { multiline: true }))}
-        ${gridHtml(1, fieldHtml("หมายเหตุ", data.note, { multiline: true }))}
         ${data.pdpaConsent ? `
         <div class="field-item">
-          <div class="field-label">ความยินยอมข้อมูลส่วนบุคคล (PDPA)</div>
           <div class="field-value field-value-multiline" style="display: flex; gap: 8px; align-items: flex-start;">
             <div class="checkbox-box" style="margin-top: 2px;">✓</div>
-            <span style="flex: 1;">ข้าพเจ้ายินยอมให้ มหาวิทยาลัยศรีปทุม เก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้า เพื่อวัตถุประสงค์ในการบันทึกข้อมูลอาจารย์พิเศษเเละใช้ภายในมหาลัย ตามที่ระบุไว้ในนโยบายความเป็นส่วนตัว</span>
+            <span style="flex: 1; font-size: 9pt;">ข้าพเจ้ายินยอมให้ มหาวิทยาลัยศรีปทุม เก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้า เพื่อวัตถุประสงค์ในการบันทึกข้อมูลอาจารย์พิเศษเเละใช้ภายในมหาลัย ตามที่ระบุไว้ในนโยบายความเป็นส่วนตัว</span>
           </div>
         </div>
-        ` : ''}
+        ` : '<p style="color:#999;font-size:9pt">ไม่ได้ยินยอมข้อมูลส่วนบุคคล (PDPA)</p>'}
       </div>
     </div>
 
-    <!-- Signature area -->
-    <div class="print-section" style="margin-top:16px">
-      <div class="section-body">
-        <div style="display:flex;justify-content:center;margin-top:8px">
-          <!-- <div style="text-align:center; width:250px">
-            <div style="border-bottom:1px solid #666;height:40px;margin-bottom:6px"></div>
-            <div style="font-size:9pt;color:#555">ลายมือชื่อผู้สมัคร</div>
-            <div style="font-size:8pt;color:#888">วันที่ ...........................</div>
-          </div> -->
-          <div style="text-align:center; width:250px">
-            <div style="border-bottom:1px solid #666;height:40px;margin-bottom:6px"></div>
-            <div style="font-size:9pt;color:#555">ลายมือชื่อผู้รับรอง / ประธานหลักสูตร</div>
-            <div style="font-size:8pt;color:#888">วันที่ ...........................</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    
 
     <div style="text-align:center;font-size:8pt;color:#aaa;margin-top:12px;border-top:1px solid #e5e7eb;padding-top:8px">
       พิมพ์เมื่อ: ${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}

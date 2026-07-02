@@ -133,7 +133,7 @@ function SearchableDropdown({ value, onChange, options, placeholder }) {
           {value || placeholder || "-- เลือก --"}
         </span>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginLeft: 6, transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "none" }}>
-          <path d="M4 6l4 4 4-4" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M4 6l4 4 4-4" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
       {open && (
@@ -154,8 +154,22 @@ function SearchableDropdown({ value, onChange, options, placeholder }) {
             />
           </div>
           <div style={{ maxHeight: 220, overflowY: "auto" }}>
+            {query.trim() && !options.some(o => o.toLowerCase() === query.toLowerCase().trim()) && (
+              <div
+                style={{
+                  padding: "8px 12px", cursor: "pointer", fontSize: 13,
+                  color: "#1a56db", fontWeight: "bold", background: "#f0fdf4",
+                  borderBottom: "1px solid #cbd5e1"
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "#dcfce7"}
+                onMouseLeave={e => e.currentTarget.style.background = "#f0fdf4"}
+                onClick={() => { onChange(query.trim()); setOpen(false); setQuery(""); }}
+              >
+                ใช้หลักสูตรเเละสาขาที่พิมพ์: "{query.trim()}"
+              </div>
+            )}
             {filtered.length === 0 ? (
-              <div style={{ padding: "10px 12px", color: "#9ca3af", fontSize: 13 }}>ไม่พบข้อมูล</div>
+              !query.trim() && <div style={{ padding: "10px 12px", color: "#9ca3af", fontSize: 13 }}>ไม่พบข้อมูล</div>
             ) : filtered.map((opt, i) => (
               <div
                 key={i}
@@ -226,7 +240,7 @@ function AddButton({ onClick, label }) {
       onMouseLeave={e => e.currentTarget.style.background = "#eff6ff"}
     >
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
       </svg>
       {label}
     </button>
@@ -261,7 +275,7 @@ function SubCard({ children, onRemove }) {
         <div style={{ position: "absolute", top: 8, right: 8 }}>
           <IconButton onClick={onRemove} title="ลบ">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </IconButton>
         </div>

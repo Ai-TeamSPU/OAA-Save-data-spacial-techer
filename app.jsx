@@ -1,9 +1,8 @@
 
 // ===== ภาคการศึกษา =====
 const SEMESTERS = [
-  "ภาคการศึกษาที่ 1/2568", "ภาคการศึกษาที่ 2/2568", "ภาคการศึกษาที่ 3/2568", "ภาคการศึกษาที่ 1/2569", "ภาคการศึกษาที่ 2/2569", "ภาคการศึกษาที่ 3/2569",
+  " 1/2568", " 2/2568", " 3/2568", " 1/2569", " 2/2569", " 3/2569",
 ];
-
 // ===== คณะ/สาขา =====
 const FACULTY_BRANCH = [
   { faculty: "คณะการสร้างเจ้าของธุรกิจ", branch: "การเป็นเจ้าของธุรกิจและสร้างสรรค์นวัตกรรม" },
@@ -539,15 +538,17 @@ function makeId() { return Math.random().toString(36).slice(2, 9); }
 
 const defaultEdu = () => ({ id: makeId(), level: "", curriculum: "", major: "", institution: "", year: "" });
 const defaultWork = () => ({ id: makeId(), position: "", company: "", startDate: "", endDate: "", isCurrent: false, isDirect: false });
+const defaultAward = () => ({ id: makeId(), title: "", link: "" });
 const defaultCourse = () => ({ id: makeId(), subject: "", credits: "", teachCount: "", proportion: "", degreeLevel: "" });
 
 const defaultForm = () => ({
   semester: "", faculty: "", branch: "",
   titlePrefix: "", titleCustom: "",
   firstNameTH: "", lastNameTH: "", firstNameEN: "", lastNameEN: "",
-  phone: "", email: "",
+  phone: "", email: "", address: "",
   educations: [defaultEdu()],
   experiences: [defaultWork()],
+  awards: [],
   courses: [defaultCourse()],
   qualSubs: {}, qualFields: {},
   teachingProportion: "",
@@ -592,39 +593,59 @@ function Section2({ form, set }) {
   return (
     <Card>
       <SectionHeader number="2" title="ข้อมูลส่วนตัว" color="#0891b2" />
-      <FormRow cols={2}>
+      <FormRow cols={1}>
         <FormField label="คำนำหน้าชื่อ (ภาษาไทย/English)" required>
           <SelectInput value={form.titlePrefix} onChange={v => set({ titlePrefix: v, titleCustom: "" })} options={TITLES} placeholder="-- เลือกคำนำหน้า --" />
         </FormField>
-        {isOther && (
+      </FormRow>
+      {isOther && (
+        <FormRow cols={1}>
           <FormField label="ระบุคำนำหน้า" required>
             <TextInput value={form.titleCustom} onChange={v => set({ titleCustom: v })} placeholder="ระบุคำนำหน้าชื่อ" />
           </FormField>
-        )}
-      </FormRow>
-      <div style={{ marginBottom: 8 }}>
+        </FormRow>
+      )}
+      <div style={{ marginBottom: 8, marginTop: 12 }}>
         <label style={{ fontSize: 12, fontWeight: 700, color: "#0891b2", textTransform: "uppercase", letterSpacing: "0.05em" }}>ชื่อ-นามสกุล ภาษาไทย</label>
       </div>
-      <FormRow cols={2}>
+      <FormRow cols={1}>
         <FormField label="ชื่อ (ไทย)" required>
           <TextInput value={form.firstNameTH} onChange={v => set({ firstNameTH: v })} placeholder="ชื่อภาษาไทย" />
         </FormField>
+      </FormRow>
+      <FormRow cols={1}>
         <FormField label="นามสกุล (ไทย)" required>
           <TextInput value={form.lastNameTH} onChange={v => set({ lastNameTH: v })} placeholder="นามสกุลภาษาไทย" />
         </FormField>
       </FormRow>
-      <div style={{ marginBottom: 8 }}>
-        <label style={{ fontSize: 12, fontWeight: 700, color: "#0891b2", textTransform: "uppercase", letterSpacing: "0.05em" }}>First-Last Name (English)</label>
+      <div style={{ marginBottom: 8, marginTop: 12 }}>
+        <label style={{ fontSize: 12, fontWeight: 700, color: "#0891b2", textTransform: "uppercase", letterSpacing: "0.05em" }}>First-Last Name (English) (ไม่บังคับกรอก)</label>
       </div>
-      <FormRow cols={2}>
-        <FormField label="First Name (EN)" required>
+      <FormRow cols={1}>
+        <FormField label="First Name (EN)">
           <TextInput value={form.firstNameEN} onChange={v => set({ firstNameEN: v })} placeholder="First name in English" />
         </FormField>
-        <FormField label="Last Name (EN)" required>
+      </FormRow>
+      <FormRow cols={1}>
+        <FormField label="Last Name (EN)">
           <TextInput value={form.lastNameEN} onChange={v => set({ lastNameEN: v })} placeholder="Last name in English" />
         </FormField>
       </FormRow>
-
+      <div style={{ marginBottom: 8, marginTop: 12 }}>
+        <label style={{ fontSize: 12, fontWeight: 700, color: "#0891b2", textTransform: "uppercase", letterSpacing: "0.05em" }}>ข้อมูลการติดต่อ / Contact Information</label>
+      </div>
+      <FormRow cols={1}>
+        <FormField label="หมายเลขโทรศัพท์" required>
+          <TextInput value={form.phone} onChange={v => set({ phone: v })} placeholder="ระบุหมายเลขโทรศัพท์" />
+        </FormField>
+      </FormRow>
+      <FormRow cols={1}>
+        <FormField label="ที่อยู่ที่สามารถติดต่อได้" required fullWidth>
+          <textarea value={form.address || ""} onChange={e => set({ address: e.target.value })}
+            placeholder="ระบุที่อยู่ปัจจุบัน/ที่อยู่ที่สามารถติดต่อได้" rows={2}
+            style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }} />
+        </FormField>
+      </FormRow>
     </Card>
   );
 }
@@ -717,7 +738,7 @@ function Section3({ form, set }) {
   );
 }
 
-// ===== Section 4 — ประสบการณ์การทำงาน =====
+// ===== Section 4 — ประสบการณ์การทำงานและผลงาน =====
 function Section4({ form, set }) {
   function updateWork(id, fields) {
     set({ experiences: form.experiences.map(e => e.id === id ? { ...e, ...fields } : e) });
@@ -725,12 +746,23 @@ function Section4({ form, set }) {
   function addWork() { set({ experiences: [...form.experiences, defaultWork()] }); }
   function removeWork(id) { set({ experiences: form.experiences.filter(e => e.id !== id) }); }
 
+  function updateAward(id, fields) {
+    set({ awards: form.awards.map(a => a.id === id ? { ...a, ...fields } : a) });
+  }
+  function addAward() { set({ awards: [...form.awards, defaultAward()] }); }
+  function removeAward(id) { set({ awards: form.awards.filter(a => a.id !== id) }); }
+
   const firstLevel = form.educations[0]?.level;
   const isBachelorOrBelow = firstLevel === "ปริญญาตรี" || firstLevel === "ต่ำกว่าปริญญาตรี";
 
   return (
     <Card>
-      <SectionHeader number="4" title="ประสบการณ์การทำงาน" color="#059669" />
+      <SectionHeader number="4" title="ประสบการณ์ทำงานและผลงาน" color="#059669" />
+
+      {/* 4.1 ประสบการณ์การทำงาน */}
+      <div style={{ fontSize: 13.5, fontWeight: 700, color: "#1e293b", marginBottom: 12, borderBottom: "1.5px solid #cbd5e1", paddingBottom: 6 }}>
+        4.1 ประสบการณ์การทำงาน
+      </div>
       {form.experiences.map((work, idx) => {
         const duration = calcDuration(work.startDate, work.isCurrent ? null : work.endDate);
         return (
@@ -782,7 +814,28 @@ function Section4({ form, set }) {
           </SubCard>
         );
       })}
-      <AddButton onClick={addWork} label="เพิ่มประสบการณ์ทำงาน" />
+      <div style={{ marginBottom: 24 }}>
+        <AddButton onClick={addWork} label="เพิ่มประสบการณ์ทำงาน" />
+      </div>
+
+      {/* 4.2 รางวัลและผลงานที่เกี่ยวข้อง */}
+      <div style={{ fontSize: 13.5, fontWeight: 700, color: "#1e293b", marginBottom: 12, borderBottom: "1.5px solid #cbd5e1", paddingBottom: 6 }}>
+        4.2 รางวัลและผลงานที่เกี่ยวข้อง
+      </div>
+      {form.awards && form.awards.map((award, idx) => (
+        <SubCard key={award.id} onRemove={() => removeAward(award.id)}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#059669", marginBottom: 10 }}>ผลงาน/รางวัลที่ {idx + 1}</div>
+          <FormRow cols={2}>
+            <FormField label="ชื่อรางวัล / ผลงานที่เกี่ยวข้อง" required>
+              <TextInput value={award.title} onChange={v => updateAward(award.id, { title: v })} placeholder="ระบุชื่อรางวัลหรือผลงาน" />
+            </FormField>
+            <FormField label="ลิงก์ผลงาน (Link)">
+              <TextInput value={award.link} onChange={v => updateAward(award.id, { link: v })} placeholder="ระบุลิงก์ผลงาน เช่น https://example.com/your-work" />
+            </FormField>
+          </FormRow>
+        </SubCard>
+      ))}
+      <AddButton onClick={addAward} label="เพิ่มรางวัล/ผลงาน" />
     </Card>
   );
 }
@@ -792,16 +845,16 @@ function Section5({ form, set }) {
   const qualGroups = [
     {
       key: "g1", result: "อาจารย์พิเศษ", color: "#1a56db",
-      label: "กลุ่มที่ 1: คุณวุฒิปริญญาโท หรือ มีตำแหน่งทางวิชาการ",
+      label: "กลุ่มที่ 1",
       subs: [
-        { key: "qual1_a", label: "คุณวุฒิปริญญาโท สอดคล้องตามเกณฑ์มาตรฐานหลักสูตร พ.ศ. 2565" },
+        { key: "qual1_a", label: "คุณวุฒิปริญญาโท สอดคล้องตามเกณฑ์มาตรฐานหลักสูตร" },
         // ข้อ 8: แก้ข้อความ ศ./รศ./ผศ. (คอมเมนต์ออกตามคำขอเพราะไม่ได้ใช้แล้ว)
         // { key: "qual1_b", label: "มีตำแหน่ง ศาสตราจารย์ รองศาสตราจารย์ หรือ ผู้ช่วยศาสตราจารย์ ในสาขาวิชา", hasField: "qual1_branch", fieldPlaceholder: "ระบุสาขาวิชาตามตำแหน่งวิชาการ..." },
       ]
     },
     {
       key: "g2", result: "อาจารย์พิเศษร่วมสอน", color: "#059669",
-      label: "กลุ่มที่ 2: คุณวุฒิปริญญาตรี + ประสบการณ์ 5 ปีขึ้นไป",
+      label: "กลุ่มที่ 2",
       // ข้อ 9: เอา qual2_b ออก เหลือแค่ 2 ข้อ
       subs: [
         { key: "qual2_a", label: "คุณวุฒิปริญญาตรี และมีประสบการณ์ทำงานภาคอุตสาหกรรม อย่างต่อเนื่องมาแล้ว 5 ปีขึ้นไป", hasExp: true, expKey: "exp2" },
@@ -810,7 +863,7 @@ function Section5({ form, set }) {
     },
     {
       key: "g3", result: "อาจารย์พิเศษช่วยสอน", color: "#dc6b19",
-      label: "กลุ่มที่ 3: คุณวุฒิปริญญาตรี + ประสบการณ์น้อยกว่า 5 ปี",
+      label: "กลุ่มที่ 3",
       subs: [
         { key: "qual3_a", label: "คุณวุฒิปริญญาตรี และมีประสบการณ์ทำงานภาคอุตสาหกรรม อย่างต่อเนื่องมาแล้วน้อยกว่า 5 ปี", hasExp: true, expKey: "exp3" },
       ]
@@ -946,7 +999,7 @@ function Section6({ form, set }) {
               </FormField>
             </FormRow>
             <FormRow cols={1}>
-              <FormField label="ระดับบัณฑิต" required>
+              <FormField label="ระดับการศึกษา" required>
                 <SelectInput value={course.degreeLevel || ""} onChange={v => updateCourse(course.id, { degreeLevel: v })} options={["ปริญญาเอก", "ปริญญาโท", "ปริญญาตรี"]} placeholder="-- เลือกระดับบัณฑิต --" />
               </FormField>
             </FormRow>
@@ -984,75 +1037,12 @@ function Section6({ form, set }) {
   );
 }
 
-// ===== Section 7 — สัดส่วนการสอน (Auto จากรหัสวิชา) =====
+// ===== Section 7 — ความยินยอมข้อมูลส่วนบุคคล (PDPA) =====
 function Section7({ form, set }) {
-  // Auto-detect proportion from first selected course
-  const autoProportions = ["50%", "ไม่มีกำหนด"];
-  const proportionOptions = ["100%", "75%", "50%", "25%", "ไม่มีกำหนด"];
-
   return (
     <Card>
-      <SectionHeader number="7" title="สัดส่วนการสอน" color="#0891b2" />
-
-      {form.courses.map((course, idx) => {
-        const parts = course.subject ? course.subject.split(" - ") : [];
-        const codeDisplay = parts[0] || `รายวิชาที่ ${idx + 1}`;
-        const isAuto = course.proportion && getProportionFromCode(course.subject) === course.proportion;
-
-        return (
-          <div key={course.id} style={{ marginBottom: 16, borderBottom: idx < form.courses.length - 1 ? "1px dashed #cbd5e1" : "none" }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", marginBottom: 8 }}>
-              สัดส่วนการสอน {codeDisplay}
-            </div>
-            {isAuto && (
-              <div style={{ fontSize: 12, color: "#0891b2", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 6, padding: "6px 12px", marginBottom: 12, fontWeight: 600 }}>
-                สัดส่วนถูกกำหนดอัตโนมัติจากรหัสวิชา: <b>{course.proportion}</b>
-              </div>
-            )}
-            <FormRow cols={2}>
-              <FormField label="สัดส่วนการสอน" hint="กำหนดอัตโนมัติจากรหัสวิชา (เกณฑ์เก่า58 = 50%, เกณฑ์ใหม่ 65 = ไม่มีกำหนด)">
-                <div style={{ padding: "8px 12px", border: "1px solid #cbd5e1", borderRadius: "6px", background: "#f1f5f9", color: "#475569", fontWeight: 600, minHeight: 38, display: "flex", alignItems: "center" }}>
-                  {course.proportion || "—"}
-                </div>
-              </FormField>
-            </FormRow>
-          </div>
-        );
-      })}
-
-      <FormRow cols={2}>
-        <FormField label="ชั่วโมงสอนต่อสัปดาห์ / Hrs per week">
-          <TextInput value={form.teachingHours || ""} onChange={v => set({ teachingHours: v })} placeholder="เช่น 3" />
-        </FormField>
-      </FormRow>
-      <FormRow cols={1}>
-        <FormField label="หมายเหตุสัดส่วนการสอน">
-          <TextInput value={form.teachingNote || ""} onChange={v => set({ teachingNote: v })} placeholder="ระบุรายละเอียดเพิ่มเติม (ถ้ามี)" />
-        </FormField>
-      </FormRow>
-    </Card>
-  );
-}
-
-// ===== Section 8 — ความเชี่ยวชาญและหมายเหตุ =====
-function Section8({ form, set }) {
-  return (
-    <Card>
-      <SectionHeader number="8" title="ความเชี่ยวชาญและหมายเหตุ" color="#9333ea" />
-      <FormRow cols={1}>
-        <FormField label="ความเชี่ยวชาญ / Expertise">
-          <textarea value={form.expertise || ""} onChange={e => set({ expertise: e.target.value })}
-            placeholder="ระบุความเชี่ยวชาญ เช่น การบริหารจัดการ, เทคโนโลยีสารสนเทศ, ..."
-            rows={3} style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }} />
-        </FormField>
-      </FormRow>
-      <FormRow cols={1}>
-        <FormField label="หมายเหตุ / Notes">
-          <textarea value={form.note || ""} onChange={e => set({ note: e.target.value })}
-            placeholder="หมายเหตุเพิ่มเติม" rows={2} style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }} />
-        </FormField>
-      </FormRow>
-      <div style={{ marginTop: 16, padding: 12, background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0" }}>
+      <SectionHeader number="7" title="ความยินยอมข้อมูลส่วนบุคคล (PDPA)" color="#9333ea" />
+      <div style={{ padding: 12, background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0" }}>
         <label style={{ display: "flex", alignItems: "flex-start", cursor: "pointer", gap: 10 }}>
           <input type="checkbox" checked={form.pdpaConsent || false} onChange={e => set({ pdpaConsent: e.target.checked })}
             style={{ width: 18, height: 18, marginTop: 2, cursor: "pointer", accentColor: "#9333ea" }} />
@@ -1278,7 +1268,10 @@ function App() {
   async function handleSave() {
     if (!form.semester || !form.faculty || !form.branch) { showToast("กรุณากรอกข้อมูลภาคการศึกษา คณะ และสาขาวิชา", "error"); return; }
     if (!form.firstNameTH || !form.lastNameTH) { showToast("กรุณากรอกชื่อ-นามสกุล (ภาษาไทย)", "error"); return; }
-    if (!form.pdpaConsent) { showToast("กรุณากดยอมรับการเก็บรวบรวมข้อมูลส่วนบุคคล (PDPA) ในข้อ 8 ก่อนบันทึกข้อมูล", "error"); return; }
+    if (!form.phone) { showToast("กรุณากรอกหมายเลขโทรศัพท์", "error"); return; }
+    // if (!form.email) { showToast("กรุณากรอกอีเมล", "error"); return; }
+    if (!form.address) { showToast("กรุณากรอกที่อยู่ที่สามารถติดต่อได้", "error"); return; }
+    if (!form.pdpaConsent) { showToast("กรุณากดยอมรับการเก็บรวบรวมข้อมูลส่วนบุคคล (PDPA) ในข้อ 7 ก่อนบันทึกข้อมูล", "error"); return; }
 
     // Validate qual1_b requires its input field
     if (form.qualSubs?.qual1_b && !form.qualFields?.qual1_branch?.trim()) {
@@ -1423,7 +1416,6 @@ function App() {
         <Section5 form={form} set={set} />
         <Section6 form={form} set={set} />
         <Section7 form={form} set={set} />
-        <Section8 form={form} set={set} />
 
         {/* Action Buttons */}
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", background: "#fff", borderRadius: 12, padding: "16px 20px", border: "1px solid #e5e7eb", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
