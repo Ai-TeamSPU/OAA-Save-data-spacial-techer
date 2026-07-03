@@ -712,6 +712,9 @@ function Section4({ form, set }) {
   function addAward() { set({ awards: [...form.awards, defaultAward()] }); }
   function removeAward(id) { set({ awards: form.awards.filter(a => a.id !== id) }); }
 
+  const firstLevel = form.educations?.[0]?.level;
+  const isBachelorOrBelow = !firstLevel || firstLevel === "ปริญญาตรี" || firstLevel === "ต่ำกว่าปริญญาตรี";
+
   return (
     <Card>
       <SectionHeader number="4" title="ประสบการณ์ทำงานและผลงาน" color="#059669" />
@@ -743,12 +746,22 @@ function Section4({ form, set }) {
                   <DateInput value={work.endDate} onChange={v => updateWork(work.id, { endDate: v })} />
                 </FormField>
               )}
-              <FormField label="สถานะ">
-                <div style={{ display: "flex", alignItems: "center", gap: 8, paddingTop: 8 }}>
-                  <input type="checkbox" id={`cur_${work.id}`} checked={work.isCurrent || false}
-                    onChange={e => updateWork(work.id, { isCurrent: e.target.checked, endDate: "" })}
-                    style={{ width: 16, height: 16, accentColor: "#059669", cursor: "pointer" }} />
-                  <label htmlFor={`cur_${work.id}`} style={{ fontSize: 13, color: "#374151", cursor: "pointer" }}>ปัจจุบัน</label>
+              <FormField label="สถานะและประเภท">
+                <div style={{ display: "flex", alignItems: "center", gap: 16, paddingTop: 8, flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <input type="checkbox" id={`cur_${work.id}`} checked={work.isCurrent || false}
+                      onChange={e => updateWork(work.id, { isCurrent: e.target.checked, endDate: "" })}
+                      style={{ width: 16, height: 16, accentColor: "#059669", cursor: "pointer" }} />
+                    <label htmlFor={`cur_${work.id}`} style={{ fontSize: 13, color: "#374151", cursor: "pointer" }}>ปัจจุบัน</label>
+                  </div>
+                  {isBachelorOrBelow && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <input type="checkbox" id={`dir_${work.id}`} checked={work.isDirect || false}
+                        onChange={e => updateWork(work.id, { isDirect: e.target.checked })}
+                        style={{ width: 16, height: 16, accentColor: "#059669", cursor: "pointer" }} />
+                      <label htmlFor={`dir_${work.id}`} style={{ fontSize: 13, color: "#374151", cursor: "pointer" }}>ประสบการณ์ตรง</label>
+                    </div>
+                  )}
                 </div>
               </FormField>
             </FormRow>
@@ -787,8 +800,8 @@ function Section4({ form, set }) {
   );
 }
 
-// ===== Section 5 — คุณสมบัติอาจารย์ (ย้ายขึ้นมาก่อน ตามข้อ 1) =====
-function Section5({ form, set }) {
+// ===== Section 6 — คุณสมบัติอาจารย์ =====
+function Section6({ form, set }) {
   const qualGroups = [
     {
       key: "g1", result: "อาจารย์พิเศษ", color: "#1a56db",
@@ -831,7 +844,7 @@ function Section5({ form, set }) {
 
   return (
     <Card>
-      <SectionHeader number="5" title={
+      <SectionHeader number="6" title={
         <span>
           คุณสมบัติ (โปรดระบุ ✓ ข้อคุณสมบัติอาจารย์)
           <span style={{ color: "#ef4444", marginLeft: 4 }}>*</span>
@@ -892,8 +905,8 @@ function Section5({ form, set }) {
   );
 }
 
-// ===== Section 6 — รายวิชาที่สอน (Searchable Dropdown จาก SubjectMaster) =====
-function Section6({ form, set }) {
+// ===== Section 5 — รายวิชาที่สอน (Searchable Dropdown จาก SubjectMaster) =====
+function Section5({ form, set }) {
   function updateCourse(id, fields) {
     set({ courses: form.courses.map(c => c.id === id ? { ...c, ...fields } : c) });
   }
@@ -910,7 +923,7 @@ function Section6({ form, set }) {
 
   return (
     <Card>
-      <SectionHeader number="6" title="รายวิชาที่สอน" color="#dc6b19" />
+      <SectionHeader number="5" title="รายวิชาที่สอน" color="#dc6b19" />
       {form.courses.map((course, idx) => {
         const parts = course.subject ? course.subject.split(" - ") : [];
         const codeDisplay = parts[0] || "";
@@ -1048,7 +1061,7 @@ function PdpaModal({ isOpen, onClose, onAccept }) {
           <button type="button" onClick={onClose} style={{ background: "rgba(255,255,255,0.15)", border: "none", borderRadius: 8, color: "#fff", cursor: "pointer", padding: "6px 10px", fontSize: 16, fontFamily: "inherit" }}>✕</button>
         </div>
         <div style={{ padding: 20, overflowY: "auto", fontSize: 13, lineHeight: 1.7, color: "#334155", flex: 1 }}>
-          <p style={{ fontWeight: 700, marginTop: 0 }}>หนังสือแจ้งการประมวลผลข้อมูลส่วนบุคคล (Privacy Notice)<br/>สำหรับผู้ที่สนใจสมัครงานกับมหาวิทยาลัย</p>
+          <p style={{ fontWeight: 700, marginTop: 0 }}>หนังสือแจ้งการประมวลผลข้อมูลส่วนบุคคล (Privacy Notice)<br />สำหรับผู้ที่สนใจสมัครงานกับมหาวิทยาลัย</p>
           <p style={{ textIndent: "24px" }}>
             มหาวิทยาลัยศรีปทุม ("มหาวิทยาลัย") ขอแจ้งให้ท่านทราบถึงหนังสือแจ้งการประมวลผลข้อมูลส่วนบุคคลของมหาวิทยาลัย เนื่องจากหนังสือแจ้งฉบับนี้ได้อธิบายถึงวิธีการที่มหาวิทยาลัยจะปฏิบัติต่อข้อมูลส่วนบุคคลของท่าน ดังนั้นเพื่อเป็นการคุ้มครองข้อมูลส่วนบุคคลของท่านที่มหาวิทยาลัยจะดำเนินการเก็บรวบรวม ใช้ หรือเปิดเผยข้อมูลส่วนบุคคล มหาวิทยาลัยจึงได้จัดให้มีหนังสือแจ้งฉบับนี้ขึ้นและมหาวิทยาลัยขอเรียนให้ท่านโปรดอ่านหนังสือแจ้งฉบับนี้เพื่อทราบและเข้าใจถึงวัตถุประสงค์ของมหาวิทยาลัยที่ดำเนินการเก็บรวบรวม ใช้ หรือเปิดเผยข้อมูลส่วนบุคคลของท่าน รายละเอียดดังนี้
           </p>
@@ -1195,7 +1208,7 @@ function App() {
     if (!form.address) { showToast("กรุณากรอกที่อยู่ที่สามารถติดต่อได้", "error"); return; }
     if (!form.pdpaConsent) { showToast("กรุณากดยอมรับการเก็บรวบรวมข้อมูลส่วนบุคคล (PDPA) ในข้อ 7 ก่อนบันทึกข้อมูล", "error"); return; }
 
-    // ตรวจสอบความต้องการเลือกคุณสมบัติอาจารย์อย่างน้อย 1 ข้อในข้อ 5
+    // ตรวจสอบความต้องการเลือกคุณสมบัติอาจารย์อย่างน้อย 1 ข้อในข้อ 6
     const firstLevel = form.educations?.[0]?.level;
     const getExpMonths = (startDate, endDate) => {
       if (!startDate) return 0;
@@ -1222,7 +1235,7 @@ function App() {
 
     const hasQual = activeKeys.some(key => form.qualSubs?.[key]);
     if (activeKeys.length > 0 && !hasQual) {
-      showToast("กรุณาเลือก (✓) คุณสมบัติของอาจารย์อย่างน้อย 1 ข้อ ในข้อ 5", "error");
+      showToast("กรุณาเลือก (✓) คุณสมบัติของอาจารย์อย่างน้อย 1 ข้อ ในข้อ 6", "error");
       return;
     }
 
