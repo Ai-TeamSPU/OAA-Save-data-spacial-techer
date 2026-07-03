@@ -333,10 +333,7 @@
         fieldHtml("ปีที่สำเร็จการศึกษา (พ.ศ.)", edu.year)
       )}
       ${gridHtml(1, fieldHtml("หลักสูตร", edu.curriculum))}
-      ${gridHtml(2,
-        // fieldHtml("สาขาวิชา", edu.major),
-        fieldHtml("สถาบัน", edu.institution)
-      )}
+      ${gridHtml(1, fieldHtml("สถาบันที่สำเร็จการศึกษา", edu.institution))}
     </div>`).join('');
 
       // === Experiences ===
@@ -372,10 +369,9 @@
           fieldHtml("รายวิชา (รหัส - ชื่อ)", c.subject),
           fieldHtml("ระดับการศึกษา", c.degreeLevel)
         )}
-      ${gridHtml(3,
+      ${gridHtml(2,
           fieldHtml("หน่วยกิต", c.credits),
-          // fieldHtml("จำนวนครั้งที่สอน", c.teachCount),
-          // fieldHtml("สัดส่วนการสอน", c.proportion)
+          fieldHtml("จำนวนครั้งที่สอน", c.teachCount)
         )}
     </div>`;
       }).join('');
@@ -384,29 +380,51 @@
       const subs = data.qualSubs || {};
       const fields = data.qualFields || {};
 
+      // Dynamic calculation of experience duration to show in Group 2/3
+      const getExpMonths = (startDate, endDate) => {
+        if (!startDate) return 0;
+        const start = new Date(startDate);
+        const end = endDate ? new Date(endDate) : new Date();
+        let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+        return months > 0 ? months : 0;
+      };
+
+      const totalDirectMonths = (data.experiences || [])
+        .filter(w => w.isDirect)
+        .reduce((acc, w) => acc + getExpMonths(w.startDate, w.isCurrent ? null : w.endDate), 0);
+
+      let totalDirectExpString = "";
+      if (totalDirectMonths > 0) {
+        const years = Math.floor(totalDirectMonths / 12);
+        const rem = totalDirectMonths % 12;
+        if (years === 0) totalDirectExpString = ` (รวม ${rem} เดือน)`;
+        else if (rem === 0) totalDirectExpString = ` (รวม ${years} ปี)`;
+        else totalDirectExpString = ` (รวม ${years} ปี ${rem} เดือน)`;
+      } else {
+        totalDirectExpString = " (รวม 0 เดือน)";
+      }
+
       const qualGroups = [
         {
           label: "กลุ่มที่ 1",
           result: "อาจารย์พิเศษ", color: "#1a56db",
           subs: [
-            { key: "qual1_a", label: "คุณวุฒิปริญญาโท สอดคล้องตามเกณฑ์มาตรฐานหลักสูตร" },
-            { key: "qual1_b", label: "มีตำแหน่งผู้ช่วยศาสตราจารย์ หรือรองศาสตราจารย์" + val(fields["qual1_branch"]) },
+            { key: "qual1_a", label: "อาจารย์ผู้สอน อาจเป็นอาจารย์ประจำหรืออาจารย์พิเศษที่มีคุณวุฒิขั้นต่ำปริญญาโทหรือเทียบเท่า" },
           ]
         },
         {
           label: "กลุ่มที่ 2",
           result: "อาจารย์พิเศษร่วมสอน", color: "#059669",
           subs: [
-            { key: "qual2_a", label: "ประสบการณ์ 5 ปีขึ้นไป" + (fields["qual2_exp_years"] ? ` (รวม ${fields["qual2_exp_years"]} ปี)` : "") },
-            { key: "qual2_b", label: "มีตำแหน่งผู้ช่วยศาสตราจารย์/รองศาสตราจารย์" + val(fields["qual2_branch"]) },
-            { key: "qual2_c", label: "มีความรู้/ประสบการณ์เป็นที่ยอมรับ สัมพันธ์กับรายวิชาที่สอน" },
+            { key: "qual2_a", label: "คุณวุฒิปริญญาตรี และมีประสบการณ์ทำงานในภาคอุตสาหกรรมที่เกี่ยวข้องมาเเล้วไม่น้อยกว่า 5 ปี" },
+            { key: "qual2_c", label: "มีความรู้และประสบการณ์เป็นที่ยอมรับซึ่งตรงหรือสัมพันธ์กับรายวิชาที่สอน หรือผลงานเป็นที่ประจักษ์ในวิชาชีพ" },
           ]
         },
         {
           label: "กลุ่มที่ 3",
           result: "อาจารย์พิเศษช่วยสอน", color: "#dc6b19",
           subs: [
-            { key: "qual3_a", label: "ประสบการณ์น้อยกว่า 5 ปี" + (fields["qual3_exp_years"] ? ` (รวม ${fields["qual3_exp_years"]} ปี)` : "") },
+            { key: "qual3_a", label: "คุณวุฒิปริญญาตรี และมีประสบการณ์ทำงานในภาคอุตสาหกรรม อย่างต่อเนื่องมาแล้วไม่เกิน 5 ปี" },
           ]
         }
       ];
@@ -448,10 +466,7 @@
         fieldHtml("ชื่อ-นามสกุล (ไทย)", fullNameTH),
         fieldHtml("Name (English)", fullNameEN)
       )}
-        ${gridHtml(2,
-        fieldHtml("หมายเลขโทรศัพท์", data.phone),
-        fieldHtml("อีเมล", data.email)
-      )}
+        ${gridHtml(1, fieldHtml("หมายเลขโทรศัพท์", data.phone))}
         ${gridHtml(1, fieldHtml("ที่อยู่", data.address, { multiline: true }))}
       </div>
     </div>
@@ -464,20 +479,25 @@
 
     <!-- Section 4 -->
     <div class="print-section">
-      <div class="section-title">4. ประสบการณ์การทำงาน</div>
-      <div class="section-body">${workItems || '<p style="color:#999;font-size:9pt">ไม่มีข้อมูล</p>'}</div>
+      <div class="section-title">4. ประสบการณ์ทำงานและผลงาน</div>
+      <div class="section-body">
+        <div style="font-size: 9.5pt; font-weight: 700; color: #1e293b; margin-bottom: 6px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">4.1 ประสบการณ์การทำงาน</div>
+        ${workItems || '<p style="color:#999;font-size:9pt;margin-bottom:12px;">ไม่มีข้อมูล</p>'}
+        <div style="font-size: 9.5pt; font-weight: 700; color: #1e293b; margin-top: 10px; margin-bottom: 6px; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px;">4.2 รางวัลและผลงานที่เกี่ยวข้อง</div>
+        ${awardItems || '<p style="color:#999;font-size:9pt">ไม่มีข้อมูล</p>'}
+      </div>
     </div>
 
     <!-- Section 5 -->
     <div class="print-section">
-      <div class="section-title">5. รายวิชาที่สอน</div>
-      <div class="section-body">${courseItems || '<p style="color:#999;font-size:9pt">ไม่มีข้อมูล</p>'}</div>
+      <div class="section-title">5. คุณสมบัติ</div>
+      <div class="section-body">${qualHtml}</div>
     </div>
 
     <!-- Section 6 -->
     <div class="print-section">
-      <div class="section-title">6. คุณสมบัติ</div>
-      <div class="section-body">${qualHtml}</div>
+      <div class="section-title">6. รายวิชาที่สอน</div>
+      <div class="section-body">${courseItems || '<p style="color:#999;font-size:9pt">ไม่มีข้อมูล</p>'}</div>
     </div>
 
     <!-- Section 7 -->

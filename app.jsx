@@ -847,7 +847,7 @@ function Section5({ form, set }) {
       key: "g1", result: "อาจารย์พิเศษ", color: "#1a56db",
       label: "กลุ่มที่ 1",
       subs: [
-        { key: "qual1_a", label: "คุณวุฒิปริญญาโท สอดคล้องตามเกณฑ์มาตรฐานหลักสูตร" },
+        { key: "qual1_a", label: "อาจารย์ผู้สอน อาจเป็นอาจารย์ประจำหรืออาจารย์พิเศษที่มีคุณวุฒิขั้นต่ำปริญญาโทหรือเทียบเท่า" },
         // ข้อ 8: แก้ข้อความ ศ./รศ./ผศ. (คอมเมนต์ออกตามคำขอเพราะไม่ได้ใช้แล้ว)
         // { key: "qual1_b", label: "มีตำแหน่ง ศาสตราจารย์ รองศาสตราจารย์ หรือ ผู้ช่วยศาสตราจารย์ ในสาขาวิชา", hasField: "qual1_branch", fieldPlaceholder: "ระบุสาขาวิชาตามตำแหน่งวิชาการ..." },
       ]
@@ -857,7 +857,7 @@ function Section5({ form, set }) {
       label: "กลุ่มที่ 2",
       // ข้อ 9: เอา qual2_b ออก เหลือแค่ 2 ข้อ
       subs: [
-        { key: "qual2_a", label: "คุณวุฒิปริญญาตรี และมีประสบการณ์ทำงานภาคอุตสาหกรรม อย่างต่อเนื่องมาแล้ว 5 ปีขึ้นไป", hasExp: true, expKey: "exp2" },
+        { key: "qual2_a", label: "คุณวุฒิปริญญาตรี และมีประสบการณ์ทำงานในภาคอุตสาหกรรมที่เกี่ยวข้องมาเเล้วไม่น้อยกว่า 5 ปี", hasExp: true, expKey: "exp2" },
         { key: "qual2_c", label: "มีความรู้และประสบการณ์เป็นที่ยอมรับซึ่งตรงหรือสัมพันธ์กับรายวิชาที่สอน หรือผลงานเป็นที่ประจักษ์ในวิชาชีพ" },
       ]
     },
@@ -865,7 +865,7 @@ function Section5({ form, set }) {
       key: "g3", result: "อาจารย์พิเศษช่วยสอน", color: "#dc6b19",
       label: "กลุ่มที่ 3",
       subs: [
-        { key: "qual3_a", label: "คุณวุฒิปริญญาตรี และมีประสบการณ์ทำงานภาคอุตสาหกรรม อย่างต่อเนื่องมาแล้วน้อยกว่า 5 ปี", hasExp: true, expKey: "exp3" },
+        { key: "qual3_a", label: "คุณวุฒิปริญญาตรี และมีประสบการณ์ทำงานในภาคอุตสาหกรรม อย่างต่อเนื่องมาแล้วไม่เกิน 5 ปี", hasExp: true, expKey: "exp3" },
       ]
     },
   ];
@@ -920,7 +920,12 @@ function Section5({ form, set }) {
 
   return (
     <Card>
-      <SectionHeader number="5" title="คุณสมบัติ (โปรดระบุ ✓ ข้อคุณสมบัติอาจารย์)" color="#7c3aed" />
+      <SectionHeader number="5" title={
+        <span>
+          คุณสมบัติ (โปรดระบุ ✓ ข้อคุณสมบัติอาจารย์)
+          <span style={{ color: "#ef4444", marginLeft: 4 }}>*</span>
+        </span>
+      } color="#7c3aed" />
       <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 14 }}>เลือกคุณสมบัติที่ตรงกับผู้สมัคร — เลือกได้มากกว่า 1 ข้อ</div>
       {displayGroups.map((group) => {
         const selected = group.subs.some(s => subs[s.key]);
@@ -1000,7 +1005,7 @@ function Section6({ form, set }) {
             </FormRow>
             <FormRow cols={1}>
               <FormField label="ระดับการศึกษา" required>
-                <SelectInput value={course.degreeLevel || ""} onChange={v => updateCourse(course.id, { degreeLevel: v })} options={["ปริญญาเอก", "ปริญญาโท", "ปริญญาตรี"]} placeholder="-- เลือกระดับบัณฑิต --" />
+                <SelectInput value={course.degreeLevel || ""} onChange={v => updateCourse(course.id, { degreeLevel: v })} options={["ปริญญาเอก", "ปริญญาโท", "ปริญญาตรี"]} placeholder="-- เลือกระดับการศึกษา --" />
               </FormField>
             </FormRow>
             {course.subject && (
@@ -1014,9 +1019,9 @@ function Section6({ form, set }) {
                 <FormField label="หน่วยกิต" required>
                   <TextInput value={course.credits} onChange={v => updateCourse(course.id, { credits: v })} placeholder="3(3-0-6)" style={{ width: 100 }} />
                 </FormField>
-                <FormField label="จำนวนครั้งที่สอน" required>
+                {/* <FormField label="จำนวนครั้งที่สอน" required>
                   <TextInput value={course.teachCount || ""} onChange={v => updateCourse(course.id, { teachCount: v })} placeholder="ระบุจำนวนครั้ง" style={{ width: 120 }} />
-                </FormField>
+                </FormField> */}
               </div>
             )}
             {!course.subject && (
@@ -1024,9 +1029,9 @@ function Section6({ form, set }) {
                 <FormField label="หน่วยกิต" required>
                   <TextInput value={course.credits} onChange={v => updateCourse(course.id, { credits: v })} placeholder="3(3-0-6)" />
                 </FormField>
-                <FormField label="จำนวนครั้งที่สอน" required>
+                {/* <FormField label="จำนวนครั้งที่สอน" required>
                   <TextInput value={course.teachCount || ""} onChange={v => updateCourse(course.id, { teachCount: v })} placeholder="ระบุจำนวนครั้ง" />
-                </FormField>
+                </FormField> */}
               </FormRow>
             )}
           </SubCard>
@@ -1038,18 +1043,27 @@ function Section6({ form, set }) {
 }
 
 // ===== Section 7 — ความยินยอมข้อมูลส่วนบุคคล (PDPA) =====
-function Section7({ form, set }) {
+function Section7({ form, set, onOpenPdpa }) {
+  const handleToggle = () => {
+    if (!form.pdpaConsent) {
+      onOpenPdpa();
+    } else {
+      set({ pdpaConsent: false });
+    }
+  };
+
   return (
     <Card>
       <SectionHeader number="7" title="ความยินยอมข้อมูลส่วนบุคคล (PDPA)" color="#9333ea" />
       <div style={{ padding: 12, background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0" }}>
-        <label style={{ display: "flex", alignItems: "flex-start", cursor: "pointer", gap: 10 }}>
-          <input type="checkbox" checked={form.pdpaConsent || false} onChange={e => set({ pdpaConsent: e.target.checked })}
+        <div style={{ display: "flex", alignItems: "flex-start", cursor: "pointer", gap: 10 }} onClick={handleToggle}>
+          <input type="checkbox" checked={form.pdpaConsent || false} readOnly
             style={{ width: 18, height: 18, marginTop: 2, cursor: "pointer", accentColor: "#9333ea" }} />
-          <span style={{ fontSize: 13, lineHeight: 1.6, color: "#334155" }}>
+          <span style={{ fontSize: 13, lineHeight: 1.6, color: "#334155", userSelect: "none" }}>
+            <span style={{ color: "#ef4444", marginRight: 4, fontWeight: "bold" }}>*</span>
             <b>ความยินยอมข้อมูลส่วนบุคคล (PDPA):</b> ข้าพเจ้ายินยอมให้ มหาวิทยาลัยศรีปทุม เก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้า เพื่อวัตถุประสงค์ในการบันทึกข้อมูลอาจารย์พิเศษเเละใช้ภายในมหาลัย ตามที่ระบุไว้ในนโยบายความเป็นส่วนตัว
           </span>
-        </label>
+        </div>
       </div>
     </Card>
   );
@@ -1104,6 +1118,82 @@ function SettingsModal({ onClose }) {
             </button>
             <button type="button" onClick={handleSave} style={{ background: "linear-gradient(135deg,#1a56db,#2563eb)", border: "none", borderRadius: 8, padding: "9px 20px", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "#fff", fontFamily: "inherit", flex: 1 }}>💾 บันทึกการตั้งค่า</button>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== PDPA Consent Modal =====
+function PdpaModal({ isOpen, onClose, onAccept }) {
+  if (!isOpen) return null;
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)", zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, animation: "fadeIn 0.25s ease-out" }} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background: "#fff", borderRadius: 14, width: "100%", maxWidth: 680, maxHeight: "85vh", display: "flex", flexDirection: "column", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)", animation: "scaleUp 0.25s ease-out" }}>
+        <div style={{ background: "linear-gradient(135deg,#1e3a8a,#1a56db)", borderRadius: "14px 14px 0 0", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div style={{ color: "#fff", fontWeight: 800, fontSize: 16 }}>🔒 ความยินยอมข้อมูลส่วนบุคคล (PDPA)</div>
+            <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, marginTop: 2 }}>หนังสือแจ้งการประมวลผลข้อมูลส่วนบุคคล (Privacy Notice)</div>
+          </div>
+          <button type="button" onClick={onClose} style={{ background: "rgba(255,255,255,0.15)", border: "none", borderRadius: 8, color: "#fff", cursor: "pointer", padding: "6px 10px", fontSize: 16, fontFamily: "inherit" }}>✕</button>
+        </div>
+        <div style={{ padding: 20, overflowY: "auto", fontSize: 13, lineHeight: 1.7, color: "#334155", flex: 1 }}>
+          <p style={{ fontWeight: 700, marginTop: 0 }}>หนังสือแจ้งการประมวลผลข้อมูลส่วนบุคคล (Privacy Notice)<br/>สำหรับผู้ที่สนใจสมัครงานกับมหาวิทยาลัย</p>
+          <p style={{ textIndent: "24px" }}>
+            มหาวิทยาลัยศรีปทุม ("มหาวิทยาลัย") ขอแจ้งให้ท่านทราบถึงหนังสือแจ้งการประมวลผลข้อมูลส่วนบุคคลของมหาวิทยาลัย เนื่องจากหนังสือแจ้งฉบับนี้ได้อธิบายถึงวิธีการที่มหาวิทยาลัยจะปฏิบัติต่อข้อมูลส่วนบุคคลของท่าน ดังนั้นเพื่อเป็นการคุ้มครองข้อมูลส่วนบุคคลของท่านที่มหาวิทยาลัยจะดำเนินการเก็บรวบรวม ใช้ หรือเปิดเผยข้อมูลส่วนบุคคล มหาวิทยาลัยจึงได้จัดให้มีหนังสือแจ้งฉบับนี้ขึ้นและมหาวิทยาลัยขอเรียนให้ท่านโปรดอ่านหนังสือแจ้งฉบับนี้เพื่อทราบและเข้าใจถึงวัตถุประสงค์ของมหาวิทยาลัยที่ดำเนินการเก็บรวบรวม ใช้ หรือเปิดเผยข้อมูลส่วนบุคคลของท่าน รายละเอียดดังนี้
+          </p>
+
+          <p style={{ fontWeight: 700, color: "#1e3a8a", marginTop: 14 }}>วัตถุประสงค์ในการเก็บรวบรวม ใช้ หรือเปิดเผยข้อมูลส่วนบุคคล</p>
+          <p style={{ textIndent: "24px" }}>
+            มหาวิทยาลัยมีวัตถุประสงค์ในการจัดการศึกษา เพื่อมุ่งให้ความรู้ ความชำนาญแก่ผู้ศึกษา สนองความต้องการโดยให้สอดคล้องกับภาวะเศรษฐกิจและสังคมของชาติ เน้นการปฏิบัติภารกิจของสถาบันอุดมศึกษาในด้านการเรียน การสอน การวิจัย การให้บริการทางวิชาการแก่สังคม และการทำนุบำริงศิลปวัฒนธรรมอันดีงามของชาติ ในการดำเนินการให้เป็นไปตามวัตถุประสงค์ดังกล่าว มหาวิทยาลัยจะเก็บรวบรวม ใช้และเปิดเผยข้อมูลส่วนบุคคล เท่าที่จำเป็นตามวัตถุประสงค์ในการดำเนินงานของมหาวิทยาลัยและอยู่ภายใต้พระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 ภายใต้ฐานและวัตถุประสงค์ ดังต่อไปนี้
+          </p>
+          <ul style={{ paddingLeft: 18, margin: "6px 0" }}>
+            <li><b>(1) ฐานสัญญา (Contract):</b> เป็นการจำเป็นที่ท่านจะต้องให้ข้อมูลส่วนบุคคลแก่มหาวิทยาลัยเมื่อท่านได้ใช้บริการหรือติดต่อเกี่ยวกับข้อเสนอการให้บริการหรือเข้าทำสัญญากับมหาวิทยาลัย เพื่อมหาวิทยาลัยจะได้นำข้อมูลดังกล่าวไปประมวลผลเกี่ยวกับการให้บริการหรือการเข้าทำสัญญา</li>
+            <li><b>(2) ฐานความยินยอม (Consent):</b> กรณีจำเป็นเมื่อท่านให้ความยินยอมกับมหาวิทยาลัย มหาวิทยาลัยอาจนำข้อมูลส่วนบุคคลของท่านไปใช้ในการประมวลผลเพื่อการพัฒนาเกี่ยวกับการศึกษา หรือนำเสนอกิจกรรมที่เกี่ยวกับมหาลัย</li>
+            <li><b>(3) ฐานประโยชน์อันชอบธรรม (Legitimate Interest):</b> กรณีจำเป็นมหาวิทยาลัยอาจนำข้อมูลส่วนบุคคลของท่านไปใช้ในการประมวลผลเพื่อการจัดการและการจัดทำรายงานที่จำเป็นภายในมหาวิทยาลัย</li>
+            <li><b>(4) ฐานจดหมายเหตุ วิจัย หรือสถิติ:</b> มหาวิทยาลัยอาจนำข้อมูลส่วนบุคคลของท่านไปใช้เพื่อการจัดทำเอกสารประวัติศาสตร์ จดหมายเหตุเพื่อประโยชน์สาธารณะ หรือการศึกษา วิจัย สถิติ</li>
+            <li><b>(5) ฐานประโยชน์สำคัญต่อชีวิต (Vital Interest):</b> เพื่อประโยชน์ในการระงับอันตรายเกี่ยวกับชีวิต สุขภาพ หรือความปลอดภัยของท่านหรือบุคคลอื่น</li>
+            <li><b>(6) ฐานภารกิจของรัฐ (Public Task):</b> เพื่อปฏิบัติหน้าที่ในการดำเนินภารกิจเพื่อประโยชน์สาธารณะ หรือปฏิบัติงานของมหาลัย</li>
+            <li><b>(7) ฐานหน้าที่ตามกฎหมาย (Legal Obligation):</b> เพื่อปฏิบัติตามกฎหมายที่เกี่ยวข้อง</li>
+          </ul>
+
+          <p style={{ fontWeight: 700, color: "#1e3a8a", marginTop: 14 }}>ข้อมูลส่วนบุคคลที่มหาวิทยาลัยจะทำการประมวลผล</p>
+          <ul style={{ paddingLeft: 18, margin: "6px 0" }}>
+            <li><b>ข้อมูลทั่วไป:</b> ชื่อ-นามสกุล, วันเกิด, เพศ, หมายเลขบัตรประจำตัวประชาชน, รูปภาพใบหน้า, สัญชาติ</li>
+            <li><b>ข้อมูลสำหรับการติดต่อ:</b> ที่อยู่ตามบัตรประชาชน, ที่อยู่ที่สามารถติดต่อได้, อีเมล, หมายเลขโทรศัพท์</li>
+            <li><b>ข้อมูลประวัติการศึกษา:</b> สถานศึกษา, วุฒิการศึกษา, ผลการเรียน, ประวัติการฝึกอบรม</li>
+            <li><b>ข้อมูลประวัติการทำงาน:</b> ตำแหน่งงาน, สถานที่ทำงานเก่า, ประวัติการทำงาน</li>
+            <li><b>ข้อมูลส่วนบุคคลที่อ่อนไหว:</b> ศาสนา, ข้อมูลสุขภาพ (เช่น ข้อมูลตรวจโรคเพื่อทำงาน), ความพิการ</li>
+          </ul>
+
+          <p style={{ fontWeight: 700, color: "#1e3a8a", marginTop: 14 }}>สิทธิของเจ้าของข้อมูลส่วนบุคคล</p>
+          <p>ท่านมีสิทธิตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 ดังต่อไปนี้:</p>
+          <ul style={{ paddingLeft: 18, margin: "6px 0" }}>
+            <li>สิทธิในการเพิกถอนความยินยอม</li>
+            <li>สิทธิในการเข้าถึงและขอรับสำเนาข้อมูลส่วนบุคคล</li>
+            <li>สิทธิในการขอแก้ไขข้อมูลส่วนบุคคลให้ถูกต้อง เป็นปัจจุบัน</li>
+            <li>สิทธิในการขอลบหรือทำลายข้อมูลส่วนบุคคลเมื่อหมดความจำเป็น</li>
+            <li>สิทธิในการขอให้ระงับการใช้ข้อมูลส่วนบุคคล</li>
+            <li>สิทธิในการคัดค้านการประมวลผลข้อมูลส่วนบุคคล</li>
+          </ul>
+
+          <p style={{ fontWeight: 700, color: "#1e3a8a", marginTop: 14 }}>ระยะเวลาในการจัดเก็บข้อมูล</p>
+          <p style={{ textIndent: "24px" }}>
+            มหาวิทยาลัยจะเก็บรักษาข้อมูลส่วนบุคคลของท่านเป็นระยะเวลา 1 ปี นับแต่วันที่ท่านได้ให้ข้อมูลกับมหาวิทยาลัย เพื่อประโยชน์ในการพิจารณาคัดเลือกอาจารย์พิเศษ ทั้งนี้เมื่อสิ้นสุดระยะเวลาดังกล่าว มหาวิทยาลัยจะทำการลบหรือทำลายข้อมูลส่วนบุคคลของท่านเมื่อหมดความจำเป็น
+          </p>
+
+          <p style={{ fontWeight: 700, color: "#1e3a8a", marginTop: 14 }}>การติดต่อมหาวิทยาลัย</p>
+          <p style={{ margin: 0 }}>
+            <b>ผู้ควบคุมข้อมูลส่วนบุคคล:</b> มหาวิทยาลัยศรีปทุม เลขที่ 2410/2 ถนนพหลโยธิน แขวงเสนานิคม เขตจตุจักร กรุงเทพมหานคร โทร 02-5611111 หรือ E-mail: DPO@spu.ac.th
+          </p>
+        </div>
+        <div style={{ padding: "12px 20px", borderTop: "1px solid #e2e8f0", display: "flex", justifyContent: "flex-end", gap: 10, background: "#f8fafc", borderRadius: "0 0 14px 14px" }}>
+          <button type="button" onClick={onClose} style={{ background: "#fff", border: "1px solid #d1d5db", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#475569", fontFamily: "inherit" }}>
+            ปฏิเสธ / ยกเลิก
+          </button>
+          <button type="button" onClick={onAccept} style={{ background: "linear-gradient(135deg,#1a56db,#2563eb)", color: "#fff", border: "none", borderRadius: 8, padding: "8px 24px", cursor: "pointer", fontSize: 13, fontWeight: 700, fontFamily: "inherit", boxShadow: "0 2px 4px rgba(26,86,219,0.2)" }}>
+            ยอมรับนโยบาย
+          </button>
         </div>
       </div>
     </div>
@@ -1217,6 +1307,7 @@ function App() {
   const [toast, setToast] = useState(null);
   const [saving, setSaving] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showPdpaModal, setShowPdpaModal] = useState(false);
   const [sheetsStatus, setSheetsStatus] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -1272,6 +1363,37 @@ function App() {
     // if (!form.email) { showToast("กรุณากรอกอีเมล", "error"); return; }
     if (!form.address) { showToast("กรุณากรอกที่อยู่ที่สามารถติดต่อได้", "error"); return; }
     if (!form.pdpaConsent) { showToast("กรุณากดยอมรับการเก็บรวบรวมข้อมูลส่วนบุคคล (PDPA) ในข้อ 7 ก่อนบันทึกข้อมูล", "error"); return; }
+
+    // ตรวจสอบความต้องการเลือกคุณสมบัติอาจารย์อย่างน้อย 1 ข้อในข้อ 5
+    const firstLevel = form.educations?.[0]?.level;
+    const getExpMonths = (startDate, endDate) => {
+      if (!startDate) return 0;
+      const start = new Date(startDate);
+      const end = endDate ? new Date(endDate) : new Date();
+      let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+      return months > 0 ? months : 0;
+    };
+    const totalDirectMonths = (form.experiences || [])
+      .filter(w => w.isDirect)
+      .reduce((acc, w) => acc + getExpMonths(w.startDate, w.isCurrent ? null : w.endDate), 0);
+    const totalDirectExpYears = totalDirectMonths / 12;
+
+    let activeKeys = [];
+    if (firstLevel === "ปริญญาตรี" || firstLevel === "ต่ำกว่าปริญญาตรี") {
+      if (totalDirectExpYears >= 5) {
+        activeKeys = ["qual2_a", "qual2_c"];
+      } else {
+        activeKeys = ["qual3_a"];
+      }
+    } else if (firstLevel === "ปริญญาโท" || firstLevel === "ปริญญาเอก") {
+      activeKeys = ["qual1_a"];
+    }
+
+    const hasQual = activeKeys.some(key => form.qualSubs?.[key]);
+    if (activeKeys.length > 0 && !hasQual) {
+      showToast("กรุณาเลือก (✓) คุณสมบัติของอาจารย์อย่างน้อย 1 ข้อ ในข้อ 5", "error");
+      return;
+    }
 
     // Validate qual1_b requires its input field
     if (form.qualSubs?.qual1_b && !form.qualFields?.qual1_branch?.trim()) {
@@ -1415,7 +1537,7 @@ function App() {
         <Section4 form={form} set={set} />
         <Section5 form={form} set={set} />
         <Section6 form={form} set={set} />
-        <Section7 form={form} set={set} />
+        <Section7 form={form} set={set} onOpenPdpa={() => setShowPdpaModal(true)} />
 
         {/* Action Buttons */}
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", background: "#fff", borderRadius: 12, padding: "16px 20px", border: "1px solid #e5e7eb", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
@@ -1440,10 +1562,13 @@ function App() {
       </div>
 
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      <PdpaModal isOpen={showPdpaModal} onClose={() => setShowPdpaModal(false)} onAccept={() => { set({ pdpaConsent: true }); setShowPdpaModal(false); }} />
       {toast && <Toast message={toast.message} type={toast.type} onHide={() => setToast(null)} />}
 
       <style>{`
         @keyframes slideIn { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         * { box-sizing: border-box; }
         body { margin: 0; }
       `}</style>
